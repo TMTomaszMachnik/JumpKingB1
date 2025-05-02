@@ -6,6 +6,7 @@ module keyboard_ctl_prog (
     output logic key_left
 );
 
+
 localparam CTR_MAX = 500_000;
 
 logic [31:0] counter;
@@ -13,6 +14,9 @@ logic [31:0] counter_nxt;
 logic key_space_nxt;
 logic key_right_nxt;
 logic key_left_nxt;
+
+
+
 
 always_ff @(posedge clk) begin
     if(rst) begin
@@ -31,7 +35,7 @@ end
 
 
 always_comb begin
-    if(counter >= CTR_MAX) begin
+    if(counter == CTR_MAX || counter == CTR_MAX*5) begin
         key_space_nxt = 1;
     end
     else begin

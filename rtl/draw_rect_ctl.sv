@@ -10,7 +10,7 @@ module draw_rect_ctl (
 
 localparam int SCREEN_HEIGHT = 600;
 localparam int RECT_HEIGHT = 64;
-localparam int CLOCKS_PER_MS = 400_000; 
+localparam int CLOCKS_PER_MS = 1_000_000; 
 localparam int A = 2;
 localparam int ENERGY_LOSS_FACTOR = 80;
 logic [11:0] position_y;

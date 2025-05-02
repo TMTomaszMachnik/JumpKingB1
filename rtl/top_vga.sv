@@ -66,7 +66,7 @@ module top_vga (
      */
 
     keyboard_ctl u_keyboard_ctl (
-        .clk(clk),
+        .clk(clk100),
         .rst(rst),
         .ps2_clk(ps2_clk),
         .ps2_data(ps2_data),
@@ -111,7 +111,7 @@ module top_vga (
     );
 
     draw_rect_ctl u_draw_rect_ctl(
-        .clk(clk),
+        .clk(clk100),
         .rst(rst),
         .key_space(key_space),
         .key_right(key_right),
