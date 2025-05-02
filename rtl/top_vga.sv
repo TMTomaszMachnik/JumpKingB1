@@ -97,10 +97,9 @@ module top_vga (
         .clk,
         .rst,
         .vga_in(vga_if_bg_r.in),
-        .vga_out(vga_if_bg_r.out),
+        .vga_out(vga_if_r_out.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),
-
         .x_value(x_pos),
         .y_value(y_pos)
     );

@@ -13,17 +13,20 @@ sv work ../../rtl/vga_pkg.sv \
         ../../rtl/vga_timing.sv \
         ../../rtl/draw_bg.sv \
         ../../rtl/draw_rect.sv \
-        ../../rtl/draw_mouse.sv \
         ../../rtl/vga_if.sv \
         ../../rtl/rom_files/image_rom.sv \
         ../../rtl/top_vga.sv \
+        ../../rtl/keyboard_ctl.sv \
+        ../../rtl/draw_rect_ctl.sv \
         ../common/tiff_writer.sv \
         top_vga_tb.sv
 
 verilog work ../common/glbl.v \
              ../../fpga/rtl/clk_wiz_0.v \
-             ../../fpga/rtl/clk_wiz_0_clk_wiz.v
+             ../../fpga/rtl/clk_wiz_0_clk_wiz.v \
+             ../../rtl/PS2Receiver.v \
+             ../../rtl/debouncer.v
 
-vhdl work ../../rtl/mouse_ctrl/MouseCtl.vhd \
-          ../../rtl/mouse_ctrl/MouseDisplay.vhd \
-          ../../rtl/mouse_ctrl/Ps2Interface.vhd
+#vhdl work ../../rtl/mouse_ctrl/MouseCtl.vhd \
+#          ../../rtl/mouse_ctrl/MouseDisplay.vhd \
+#          ../../rtl/mouse_ctrl/Ps2Interface.vhd

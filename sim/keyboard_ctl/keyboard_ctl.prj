@@ -1,0 +1,4 @@
+
+sv work ../../rtl/draw_rect_ctl.sv \
+        keyboard_ctl_prog.sv \
+        keyboard_ctl_tb.sv

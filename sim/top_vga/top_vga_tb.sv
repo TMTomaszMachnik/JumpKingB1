@@ -95,11 +95,9 @@ module top_vga_tb;
         # 30 rst = 1'b1;
         # 30 rst = 1'b0;
 
-        force dut.u_draw_rect.x_value = 12'd328;
-        force dut.u_draw_rect.y_value = 12'd70; 
+        // force dut.u_draw_rect.x_value = 12'd328;
+        // force dut.u_draw_rect.y_value = 12'd70; 
 
-        force dut.u_draw_mouse.x_value = 12'd328;
-        force dut.u_draw_mouse.y_value = 12'd70; 
 
         $display("If simulation ends before the testbench");
         $display("completes, use the menu option to run all.");

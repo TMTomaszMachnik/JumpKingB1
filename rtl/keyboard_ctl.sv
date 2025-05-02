@@ -44,7 +44,7 @@ end
 always_comb begin
     if (f_EOT) begin
         case (keyboard_data)
-            8'h20: key_space_nxt = 1'b1; 
+            8'h29: key_space_nxt = 1'b1; 
             8'h23: key_left_nxt = 1'b1; 
             8'h4D: key_right_nxt = 1'b1; 
             default: begin
