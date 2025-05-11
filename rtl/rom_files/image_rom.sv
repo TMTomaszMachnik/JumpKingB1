@@ -24,7 +24,7 @@ module image_rom (
      * Local variables and signals
      */
 
-    reg [11:0] rom [0:4095];
+    reg [11:0] rom [0:4096]; 
 
 
     /**

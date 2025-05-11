@@ -14,6 +14,7 @@ logic key_right;
 logic key_left;
 logic ps2_clk;
 logic ps2_data;
+logic counter = 0;
 
 initial begin
     clk = 1'b0;
@@ -45,8 +46,8 @@ keyboard_ctl dut_key(
 
 
 draw_rect_ctl dut(
-    .clk,
-    .rst,
+    .clk(clk100),
+    .rst(rst),
     .key_space(key_space),
     .key_right(key_right),
     .key_left(key_left),
@@ -57,40 +58,32 @@ draw_rect_ctl dut(
 initial begin
     @(negedge rst);
 
+#100;
     force dut_key.u_ps2_receiver.keycode = 16'h29;
     force dut_key.u_ps2_receiver.oflag = 1'b1; 
-    #5000; 
+    #100
     release dut_key.u_ps2_receiver.keycode; 
     release dut_key.u_ps2_receiver.oflag; 
 
     force dut_key.u_ps2_receiver.keycode = 16'hF029; 
     force dut_key.u_ps2_receiver.oflag = 1'b1; 
-    #5000;
-    release dut_key.u_ps2_receiver.keycode;
-    release dut_key.u_ps2_receiver.oflag; 
-
-
+    #1600;
 
     force dut_key.u_ps2_receiver.keycode = 16'h29;
     force dut_key.u_ps2_receiver.oflag = 1'b1; 
-    #5000; 
+    #100
     release dut_key.u_ps2_receiver.keycode; 
     release dut_key.u_ps2_receiver.oflag; 
 
     force dut_key.u_ps2_receiver.keycode = 16'hF029; 
     force dut_key.u_ps2_receiver.oflag = 1'b1; 
-    #5000;
-    release dut_key.u_ps2_receiver.keycode;
-    release dut_key.u_ps2_receiver.oflag; 
 
-
-    $finish;
 end
 
 
-always_comb begin
-    $display("Time: %0t | key_space: %b |position_y: %0d | rst: %0d | cycle_counter: %0d | time_passed: %0d | velocity_y: %0d | state: %0d | key_space_prev: %0d | space_state: %0h" , 
-    $time, key_space, dut.position_y, rst, dut.cycle_counter, dut.time_passed,dut.velocity_y, dut.state, dut.key_space_prev, dut_key.u_ps2_receiver.keycode);
+initial begin
+    $monitor("Time: %0t | key_space: %b | position_y: %0d | rst: %0d | cycle_counter: %0d | time_passed: %0d | velocity_y: %0d | state: %0d | space_state: %0h", 
+        $time, key_space, dut.position_y, rst, dut.cycle_counter, dut.time_passed, dut.velocity_y, dut.state, dut_key.u_ps2_receiver.keycode);
 end
 
 endmodule

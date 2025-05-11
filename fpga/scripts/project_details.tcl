@@ -61,4 +61,5 @@ set verilog_files {
 #Specify files for a memory initialization     -- EDIT
 set mem_files {
   ../rtl/image_rom.data
+  ../rtl/output.data
 }

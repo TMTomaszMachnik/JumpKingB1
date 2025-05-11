@@ -93,6 +93,7 @@ module top_vga (
         .vga_out(vga_if_bg_r.out)
     );
 
+
     draw_rect u_draw_rect (
         .clk,
         .rst,
