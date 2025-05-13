@@ -25,6 +25,7 @@
 // local parameters
 //------------------------------------------------------------------------------
 localparam int SCREEN_HEIGHT = 600;
+localparam int SCREEN_WIDTH = 800;
 localparam int RECT_HEIGHT = 64;
 localparam int CLOCKS_PER_MS = 1_000_000; 
 localparam int A = 2;
@@ -49,10 +50,12 @@ logic [11:0] time_passed_nxt;
 logic [25:0] cycle_counter_nxt;;
 
 
-typedef enum logic [1:0] {
-    IDLE    = 2'b00,
-    FALLING = 2'b01, 
-    JUMP    = 2'b10
+typedef enum logic [2:0] {
+    IDLE    = 3'b000,
+    FALLING = 3'b001, 
+    JUMP    = 3'b010,
+    LEFT   = 3'b011,
+    RIGHT   = 3'b100
 } state_t;
 
 state_t state, state_nxt;   
@@ -80,6 +83,10 @@ always_comb begin : state_comb_blk
         IDLE: begin
             if (key_space) begin
                 state_nxt = JUMP;
+            end else if(key_right) begin
+                state_nxt = RIGHT;
+            end else if(key_left) begin
+                state_nxt = LEFT;
             end else begin
                 state_nxt = IDLE;
             end
@@ -96,6 +103,20 @@ always_comb begin : state_comb_blk
                 state_nxt = FALLING;
             end else begin
                 state_nxt = JUMP;
+            end
+        end
+        LEFT: begin
+            if(!key_left) begin
+                state_nxt = IDLE;
+            end else begin    
+                state_nxt = LEFT;
+            end
+        end
+        RIGHT: begin
+            if(!key_right) begin
+                state_nxt = IDLE;
+            end else begin    
+                state_nxt = RIGHT;
             end
         end
     endcase
@@ -178,6 +199,40 @@ always_comb begin : out_comb_blk
                 cycle_counter_nxt = cycle_counter + 1; 
             end
         end
+        LEFT: begin
+            value_y_nxt = value_y;
+            position_y_nxt = position_y;
+            velocity_y_nxt = velocity_y;
+            time_passed_nxt = time_passed;
+            cycle_counter_nxt = cycle_counter;
+            if (cycle_counter == (CLOCKS_PER_MS*4)) begin
+                value_x_nxt = value_x - 10;
+                cycle_counter_nxt = 0;
+                if(value_x <= 0) begin
+                    value_x_nxt = value_x;
+                end
+            end else begin
+                cycle_counter_nxt = cycle_counter + 1; 
+            end
+        end
+        RIGHT: begin
+            value_y_nxt = value_y;
+            position_y_nxt = position_y;
+            velocity_y_nxt = velocity_y;
+            time_passed_nxt = time_passed;
+            cycle_counter_nxt = cycle_counter; 
+
+            if (cycle_counter == (CLOCKS_PER_MS*4)) begin
+                value_x_nxt = value_x + 10;
+                cycle_counter_nxt = 0;
+                if(value_x > SCREEN_WIDTH - RECT_HEIGHT - 1) begin
+                    value_x_nxt = value_x;
+                end
+            end else begin
+                cycle_counter_nxt = cycle_counter + 1; 
+            end
+        end
+
     endcase
 end
 

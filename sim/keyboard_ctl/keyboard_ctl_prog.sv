@@ -36,10 +36,10 @@ end
 
 always_comb begin
     if(counter == CTR_MAX || counter == CTR_MAX*5) begin
-        key_space_nxt = 1;
+        key_right_nxt = 1;
     end
     else begin
-        key_space_nxt = 0;
+        key_right_nxt = 0;
     end
     key_right_nxt = 0;
     key_left_nxt = 0;

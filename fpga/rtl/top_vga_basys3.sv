@@ -15,6 +15,9 @@
 module top_vga_basys3 (
         input  wire clk,
         input  wire btnC,
+        input  wire  bleft,
+        input  wire  bright,
+        input  wire  space,
         output wire Vsync,
         output wire Hsync,
         output wire [3:0] vgaRed,
@@ -95,7 +98,10 @@ module top_vga_basys3 (
         .vs(Vsync),
 
         .ps2_clk(PS2Clk),
-        .ps2_data(PS2Data)
+        .ps2_data(PS2Data),
+        .bleft(bleft),
+        .bright(bright),
+        .space(space)
     );
 
 endmodule

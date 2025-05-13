@@ -15,14 +15,10 @@ logic [15:0] keycode;
 logic f_EOT;
 logic [15:0] keyboard_buf;
 logic [15:0] keyboard_buf_nxt;
-logic         CLK50MHZ=0;
 
-always @(posedge(clk))begin
-    CLK50MHZ<=~CLK50MHZ;
-end
 
 PS2Receiver u_ps2_receiver (
-    .clk(CLK50MHZ),
+    .clk(clk),
     .ps2_clk(ps2_clk),
     .ps2_data(ps2_data),
     .keycode(keycode),
@@ -50,14 +46,19 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 always_comb begin
+    key_space_nxt = 1'b0;
+    key_right_nxt = 1'b0;
+    key_left_nxt = 1'b0;
+    keyboard_buf_nxt = keyboard_buf;
+
     if (f_EOT) begin
         case (keycode)
             16'h29: key_space_nxt = 1'b1; 
             16'hF029: key_space_nxt = 1'b0;
-            16'h74: key_right_nxt = 1'b1; 
-            16'hF074: key_right_nxt = 1'b0; 
-            16'h6B: key_left_nxt = 1'b1; 
-            16'hF06B: key_left_nxt = 1'b0; 
+            16'h23: key_right_nxt = 1'b1; 
+            16'hF023: key_right_nxt = 1'b0; 
+            16'h1C: key_left_nxt = 1'b1; 
+            16'hF01C: key_left_nxt = 1'b0; 
             default: ; 
         endcase
     end else begin
