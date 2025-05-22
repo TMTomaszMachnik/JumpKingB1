@@ -57,35 +57,29 @@ draw_rect_ctl dut(
 
 initial begin
     @(negedge rst);
-#100;
-    force dut.key_right = 1'b1;
-    #10000;
-    force dut.key_right = 1'b0;
-    #100;
-    force dut.key_left = 1'b1;
-    #10000;
-    force dut.key_left = 1'b0;
     #100;
 
-
-    // force dut_key.u_ps2_receiver.keycode = 16'h23;
-    // force dut_key.u_ps2_receiver.oflag = 1'b1; 
-    // #10000;
-    // release dut_key.u_ps2_receiver.keycode; 
-    // release dut_key.u_ps2_receiver.oflag; 
-
-    // force dut_key.u_ps2_receiver.keycode = 16'hF023; 
-    // force dut_key.u_ps2_receiver.oflag = 1'b1; 
+    // Testbench for Left/Right Movement
+    // force dut.key_left = 1'b0;
+    // force dut.key_right = 1'b1;
+    // #1000;
+    // force dut.key_right = 1'b0;
     // #100;
-    // force dut_key.u_ps2_receiver.keycode = 16'h1C;
-    // force dut_key.u_ps2_receiver.oflag = 1'b1; 
+    // force dut.key_left = 1'b1;
     // #10000;
-
-    // force dut_key.u_ps2_receiver.keycode = 16'hF01C;
-    // force dut_key.u_ps2_receiver.oflag = 1'b1; 
+    // force dut.key_left = 1'b0;
     // #100;
-    // release dut_key.u_ps2_receiver.keycode; 
-    // release dut_key.u_ps2_receiver.oflag; 
+
+    //Testbench for Jumping/Falling
+    force dut.key_space = 1'b1;
+    #1000;
+    force dut.key_space = 1'b0;
+    #100;
+    force dut.key_space = 1'b1;
+    #10000;
+    force dut.key_space = 1'b0;
+    #100;
+
 
 
 end
@@ -95,9 +89,17 @@ end
 //     $monitor("Time: %0t | key_space: %b | position_y: %0d | rst: %0d | cycle_counter: %0d | time_passed: %0d | velocity_y: %0d | state: %0d | space_state: %0h", 
 //         $time, key_space, dut.position_y, rst, dut.cycle_counter, dut.time_passed, dut.velocity_y, dut.state, dut_key.u_ps2_receiver.keycode);
 // end
+
+//Monitor for space movement
 initial begin
-    $monitor("Time: %0t | cycle_counter: %0d | value_x: %0d | state: %0d",
-        $time, dut.cycle_counter, dut.value_x, dut.state);
+    $monitor("Time: %0t | cycle_counter: %0d | value_x: %0d | state: %0d | velocity %0d | key_space: %0d | dut.current_tile: %0d | character_state : %0d",
+        $time, dut.cycle_counter, dut.value_y, dut.state, dut.velocity_y, dut.key_space, dut.current_tile, dut.character_state);
 end
+
+// Monitor for Right/Left Movement
+// initial begin
+//     $monitor("Time: %0t | cycle_counter: %0d | value_x: %0d | state: %0d | key_left: %0d | key_right: %0d | dut.current_tile: %0d",
+//         $time, dut.cycle_counter, dut.value_x, dut.state, dut.key_left, dut.key_right, dut.current_tile);
+// end
 
 endmodule

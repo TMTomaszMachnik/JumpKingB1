@@ -124,8 +124,9 @@ module draw_bg (
     logic [11:0] bg_memory [0:IMAGE_WIDTH*IMAGE_HEIGHT-1];
 
     initial begin
-        $readmemh("../rtl/output.data", bg_memory);
-        $display("Loaded %d pixels from memory file", IMAGE_WIDTH*IMAGE_HEIGHT);
+        // $readmemh("../../rtl/Graphics/background.data", bg_memory);
+        $readmemh("../rtl/Graphics/background.data", bg_memory);
+        // $display("Loaded %d pixels from memory file", IMAGE_WIDTH*IMAGE_HEIGHT);
     end
 
     logic [11:0] scaled_hcount, scaled_vcount;

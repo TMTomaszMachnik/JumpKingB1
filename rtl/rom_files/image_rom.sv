@@ -1,45 +1,34 @@
-/**
- * Copyright (C) 2025  AGH University of Science and Technology
- * MTM UEC2
- * Author: Robert Szczygiel
- * Modified: Piotr Kaczmarczyk
- *
- * Description:
- * This is the ROM for the 'AGH48x64.png' image.
- * The image size is 48 x 64 pixels.
- * The input 'address' is a 12-bit number, composed of the concatenated
- * 6-bit y and 6-bit x pixel coordinates.
- * The output 'rgb' is 12-bit number with concatenated
- * red, green and blue color values (4-bit each)
- */
-
 module image_rom (
-        input  logic clk ,
-        input  logic [11:0] address,  // address = {addry[5:0], addrx[5:0]}
-        output logic [11:0] rgb
-    );
-
+    input  logic clk,
+    input  logic [1:0] character_state, 
+    input  logic [11:0] address,      
+    output logic [11:0] rgb           
+);
 
     /**
      * Local variables and signals
      */
+    reg [11:0] micro_normal [0:3071];   
+    reg [11:0] micro_curled [0:3071];  
+    reg [11:0] micro_jump   [0:3071]; 
 
-    reg [11:0] rom [0:4096]; 
 
+    initial begin
+        $readmemh("../Graphics/micro.data", micro_normal);
+        $readmemh("../Graphics/micro_curled.data", micro_curled);
+        $readmemh("../Graphics/micro_jump.data", micro_jump);
+    end
 
     /**
-     * Memory initialization from a file
+     * Character frame selection logic
      */
-
-    /* Relative path from the simulation or synthesis working directory */
-    initial $readmemh("../rtl/image_rom.data", rom);
-
-
-    /**
-     * Internal logic
-     */
-
-    always_ff @(posedge clk)
-        rgb <= rom[address];
+    always_ff @(posedge clk) begin
+        case (character_state)
+            2'b00:   rgb <= micro_normal[address];  
+            2'b01:   rgb <= micro_curled[address];  
+            2'b10:   rgb <= micro_jump[address];    
+            default: rgb <= micro_normal[address]; 
+        endcase
+    end
 
 endmodule

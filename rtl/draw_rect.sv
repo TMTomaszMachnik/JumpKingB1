@@ -24,7 +24,7 @@ localparam REC_HEIGHT = 63;
 logic [11:0] rgb_nxt;
 
 
-localparam C_DELAY_LEN = 2;
+localparam C_DELAY_LEN = 3;
 
 logic [C_DELAY_LEN-1:0][10:0] hcount_buf;
 logic [C_DELAY_LEN-1:0][10:0] vcount_buf;
@@ -33,7 +33,6 @@ logic [C_DELAY_LEN-1:0]  vsync_buf;
 logic [C_DELAY_LEN-1:0]  hblnk_buf;
 logic [C_DELAY_LEN-1:0]  vblnk_buf;
 logic [C_DELAY_LEN-1:0][11:0]  rgb_buf;
-
 
 always_ff @(posedge clk) begin
     if (rst) begin
@@ -81,7 +80,7 @@ always_comb begin : bg_comb_blk
     if(((vcount_buf[C_DELAY_LEN-1] <= (y_value + REC_HEIGHT)) && vcount_buf[C_DELAY_LEN-1] >= (y_value)) &&
     (hcount_buf[C_DELAY_LEN-1] >= (x_value) && hcount_buf[C_DELAY_LEN-1] <= (x_value + REC_WIDTH))) begin
         rgb_nxt = rgb_pixel;
-        pixel_addr = ((vcount_buf[C_DELAY_LEN-1] - y_value) << 6) + (hcount_buf[C_DELAY_LEN-1] - x_value) + 1;
+        pixel_addr = ((vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1)) + (hcount_buf[C_DELAY_LEN-1] - x_value);
     end
     else begin
         rgb_nxt = rgb_buf[C_DELAY_LEN-1];

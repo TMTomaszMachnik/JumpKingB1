@@ -61,7 +61,7 @@ module top_vga (
     wire [15:0] keyboard_data;
     wire f_EOT;
 
-
+    wire [1:0] char_state;
 
     wire key_space;
     wire key_right;
@@ -119,7 +119,8 @@ module top_vga (
     image_rom u_image_rom(
         .clk,
         .rgb(rgb_pixel),
-        .address(address)
+        .address(address),
+        .character_state(char_state)
     );
 
     draw_rect_ctl u_draw_rect_ctl(
@@ -129,7 +130,8 @@ module top_vga (
         .key_right(bright),
         .key_left(bleft),
         .value_x(x_pos),
-        .value_y(y_pos)
+        .value_y(y_pos),
+        .character_state(char_state)
     );
 
 
