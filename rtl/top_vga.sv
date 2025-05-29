@@ -22,8 +22,8 @@ module top_vga (
         output logic [3:0] g,
         output logic [3:0] b,
 
-        inout  ps2_clk,
-        inout  ps2_data,
+        input  ps2_clk,
+        input  ps2_data,
 
         input wire bleft,
         input wire bright,

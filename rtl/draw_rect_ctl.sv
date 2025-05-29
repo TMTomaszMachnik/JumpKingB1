@@ -52,6 +52,9 @@ logic [11:0] y_pos;
 logic [11:0] y_pos_nxt;
 logic facing;
 
+logic [11:0] current_start_y;
+logic [11:0] current_start_y_nxt;
+
 typedef enum logic [2:0] {
     IDLE    = 3'b000,
     FALLING = 3'b001, 
@@ -74,12 +77,10 @@ logic [6:0] tile_x_l, tile_x_r;
 logic [5:0] tile_y_l, tile_y_r, tile_y_below, tile_y_above;
 logic [11:0] tile_idx_l, tile_idx_r, tile_idx_below, tile_idx_above;
 logic [1:0] tile_l, tile_r, tile_below, tile_above;
+reg [11:0] y_jump_start, y_jump_start_nxt;
 
 localparam TILES_X = 67;  // 800/12 rounded up
 localparam TILES_Y = 50;  // 600/12
-
-
-
 localparam y_start = SCREEN_HEIGHT - REC_HEIGHT - 15;
 localparam x_start = 12'h027;
 
@@ -118,7 +119,7 @@ always_comb begin : state_comb_blk
         end
 
         FALLING: begin
-            if(bottom_reached) begin // ||
+            if(bottom_reached) begin 
                 state_nxt = IDLE;
             end
         end
@@ -181,6 +182,15 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        y_jump_start <= y_start;
+    end else begin
+        y_jump_start <= y_jump_start_nxt;
+    end
+end
+
+
 //------------------------------------------------------------------------------
 // output logic
 //------------------------------------------------------------------------------
@@ -195,7 +205,6 @@ always_comb begin : out_comb_blk
     top_reached = 1'b0;
     bottom_reached = 1'b0;
 
-    // Tile calculations (unchanged)
     tile_y_l = value_y / 12;
     tile_x_l = (value_x - 1) / 12;
     tile_idx_l = tile_y_l * 64 + tile_x_l;
@@ -205,11 +214,6 @@ always_comb begin : out_comb_blk
     tile_x_r = (value_x + REC_WIDTH) / 12;
     tile_idx_r = tile_y_r * 64 + tile_x_r;
     tile_r = collision_map[tile_idx_r];
-
-    // tile_y_below = (value_y + REC_HEIGHT) / 12;
-    // tile_x = value_x / 12;
-    // tile_idx_below = tile_y_below * 64 + tile_x;
-    // tile_below = collision_map[tile_idx_below];
 
     tile_y_below = (value_y + REC_HEIGHT) / 12;
     tile_x       = value_x / 12;
@@ -224,6 +228,7 @@ always_comb begin : out_comb_blk
 
     case(state)
         IDLE: begin
+            y_jump_start_nxt = y_jump_start;
             value_x_nxt = value_x;
             value_y_nxt = value_y;
             y_pos_nxt = y_pos;
@@ -232,17 +237,26 @@ always_comb begin : out_comb_blk
             character_state_nxt = 2'b00;
             top_reached = 1'b0;
             bottom_reached = 1'b0;
-
         end
 
+        // JUMP_PREP: begin
+        //     character_state_nxt = 2'b01;
+        //     if(key_space) begin
+        //         vel_time_nxt = '0;
+        //         counter_nxt = '0;
+        //         value_y_nxt = y_start;
+        //     end
+        //     else begin
+        //         counter_nxt = counter + 1;
+        //     end
+        // end
         JUMP_PREP: begin
             character_state_nxt = 2'b01;
             if(key_space) begin
                 vel_time_nxt = '0;
                 counter_nxt = '0;
-                value_y_nxt = y_start;
-            end
-            else begin
+                value_y_nxt = y_jump_start;
+            end else begin
                 counter_nxt = counter + 1;
             end
         end
@@ -251,7 +265,8 @@ always_comb begin : out_comb_blk
             character_state_nxt = 2'b01;
             if(counter == CTR_MAX) begin
                 vel_time_nxt = vel_time + 1; // Domyślne zwiększenie czasu
-                value_y_nxt = y_start + ((A*vel_time*vel_time)/(2*DIV)) - (VELOCITY*vel_time);
+                //value_y_nxt = y_start + ((A*vel_time*vel_time)/(2*DIV)) - (VELOCITY*vel_time);
+                value_y_nxt = y_jump_start + ((A*vel_time*vel_time)/(2*DIV)) - (VELOCITY*vel_time);
                 y_pos_nxt = value_y_nxt;      
 
                 if(facing) begin
@@ -272,29 +287,50 @@ always_comb begin : out_comb_blk
             end
         end
 
+        
+        // FALLING: begin
+        //     character_state_nxt = 2'b10;
+        //     if(counter == CTR_MAX) begin
+        //         vel_time_nxt = vel_time + 1;
+        //         value_y_nxt = y_pos + ((A*vel_time*vel_time)/(2*DIV));
+
+        //         if(value_y_nxt >= y_start) begin
+        //             value_y_nxt = y_start;
+        //             vel_time_nxt = 0;
+        //             bottom_reached = 1;
+        //         end
+        //         counter_nxt = 0;
+        //     end
+        //     else begin
+        //         counter_nxt = counter + 1;
+        //     end
+        // end
         FALLING: begin
             character_state_nxt = 2'b10;
             if(counter == CTR_MAX) begin
                 vel_time_nxt = vel_time + 1;
                 value_y_nxt = y_pos + ((A*vel_time*vel_time)/(2*DIV));
-
+                
                 if(value_y_nxt >= y_start) begin
                     value_y_nxt = y_start;
                     vel_time_nxt = 0;
                     bottom_reached = 1;
+                    y_jump_start_nxt = y_start; // Set new jump base
+                end else begin
+                    y_jump_start_nxt = y_jump_start; // Keep previous value
                 end
+                
                 counter_nxt = 0;
-            end
-            else begin
+            end else begin
                 counter_nxt = counter + 1;
+                y_jump_start_nxt = y_jump_start; // Keep previous value
             end
         end
-
+        
         
         LEFT: begin
             character_state_nxt = 2'b01;
             if (tile_l == 2'b01 || value_x <= x_start) begin
-                // value_x_nxt stays at default (value_x)
             end else if (vel_time >= (CTR_MAX * 4)) begin
                 value_x_nxt = value_x - 12;
                 vel_time_nxt = 0;
@@ -306,7 +342,6 @@ always_comb begin : out_comb_blk
         RIGHT: begin
             character_state_nxt = 2'b01;
             if (tile_r == 2'b01 || value_x >= SCREEN_WIDTH - REC_WIDTH - 1) begin
-                // value_x_nxt stays at default (value_x)
             end else if (vel_time >= (CTR_MAX * 4)) begin
                 value_x_nxt = value_x + 12;
                 vel_time_nxt = 0;
@@ -314,7 +349,7 @@ always_comb begin : out_comb_blk
                 vel_time_nxt = vel_time + 1;
             end
         end
-        
+
         default: begin
         end
     endcase

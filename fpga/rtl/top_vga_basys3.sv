@@ -38,9 +38,9 @@ module top_vga_basys3 (
      */
 
     wire clk_ss;
-    wire clk_40, clk_100;
+    wire clk_65, clk_100;
     wire locked;
-    wire clk_40_mirror;
+    wire clk_65_mirror;
 
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
@@ -53,17 +53,17 @@ module top_vga_basys3 (
      * Signals assignments
      */
 
-    assign JA1 = clk_40_mirror;
+    assign JA1 = clk_65_mirror;
 
 
     /**
      * FPGA submodules placement
      */
     clk_wiz_0 clk_wiz_mod(
-        .clk100MHz(clk_100),
-        .clk40Mhz(clk_40),
+        .clk_100(clk_100),
+        .clk_65(clk_65),
         .locked(locked),
-        .clk(clk)
+        .clk_in1(clk)
     );
 
     always_ff @(posedge clk_ss)
@@ -73,8 +73,8 @@ module top_vga_basys3 (
     // not functionally required for this design to work.
 
     ODDR pclk_oddr (
-        .Q(clk_40_mirror),
-        .C(clk_40),
+        .Q(clk_65_mirror),
+        .C(clk_65),
         .CE(1'b1),
         .D1(1'b1),
         .D2(1'b0),
@@ -88,7 +88,7 @@ module top_vga_basys3 (
      */
 
     top_vga u_top_vga (
-        .clk(clk_40),
+        .clk(clk_65),
         .clk100(clk_100),
         .rst(btnC),
         .r(vgaRed),

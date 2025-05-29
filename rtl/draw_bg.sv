@@ -97,8 +97,8 @@ module draw_bg (
     localparam int IMAGE_HEIGHT = 48;
     // localparam int SCALE_X = VER_PIXELS / IMAGE_WIDTH; 
     // localparam int SCALE_Y = HOR_PIXELS / IMAGE_HEIGHT;
-    localparam SCALE_X = 13;
-    localparam SCALE_Y = 13; 
+    localparam SCALE_X = 16;
+    localparam SCALE_Y = 16; 
     logic [11:0] rgb_nxt;
     always_ff @(posedge clk) begin : bg_ff_blk
         if (rst) begin
