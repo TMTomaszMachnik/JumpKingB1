@@ -1,4 +1,2 @@
-
 sv work ../../rtl/draw_rect_ctl.sv \
-        draw_rect_ctl_prog.sv \
-        draw_rect_ctl_tb.sv
+              draw_rect_ctl_tb.sv
