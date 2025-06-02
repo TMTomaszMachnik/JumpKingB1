@@ -24,12 +24,12 @@ module top_vga_tb;
 
     timeunit 1ns;
     timeprecision 1ps;
-
+    import vga_pkg::*;
     /**
      *  Local parameters
      */
 
-    localparam CLK_PERIOD = 15;     // 40 MHz
+    localparam CLK_PERIOD = 15.38;     // 65 MHz
     localparam CLK_PERIOD100 = 10;     // 100 MHz
 
 
@@ -74,8 +74,11 @@ module top_vga_tb;
     );
 
     tiff_writer #(
-        .XDIM(16'd1056),
-        .YDIM(16'd628),
+        // .XDIM(16'd1056),
+        // .YDIM(16'd628),
+            .XDIM(TOTAL_HOR_PIXELS),
+            .YDIM(TOTAL_VER_PIXELS),
+
         .FILE_DIR("../../results")
     ) u_tiff_writer (
         .clk(clk),

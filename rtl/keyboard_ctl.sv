@@ -46,27 +46,30 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 always_comb begin
-    key_space_nxt = 1'b0;
-    key_right_nxt = 1'b0;
-    key_left_nxt = 1'b0;
-    keyboard_buf_nxt = keyboard_buf;
+    key_space_nxt = key_space;
+    key_right_nxt = key_right;
+    key_left_nxt = key_left;
+    keyboard_buf_nxt = keycode;
+
 
     if (f_EOT) begin
-        case (keycode)
-            16'h29: key_space_nxt = 1'b1; 
-            16'hF029: key_space_nxt = 1'b0;
-            16'h23: key_right_nxt = 1'b1; 
-            16'hF023: key_right_nxt = 1'b0; 
-            16'h1C: key_left_nxt = 1'b1; 
-            16'hF01C: key_left_nxt = 1'b0; 
-            default: ; 
+
+        if(keyboard_buf[15:8] == 8'hF0) begin
+            keyboard_buf_nxt = '0;
+        end
+        else begin
+        case (keyboard_buf[7:0])
+            8'h29: key_space_nxt = 1'b1; 
+            8'h23: key_right_nxt = 1'b1; 
+            8'h1C: key_left_nxt = 1'b1;
+            default: begin
+                key_space_nxt = '0;
+                key_right_nxt = '0;
+                key_left_nxt = '0;
+            end
         endcase
-    end else begin
-        key_space_nxt = 1'b0;
-        key_left_nxt = 1'b0;
-        key_right_nxt = 1'b0;
+        end
     end
-    keyboard_buf_nxt = keycode;
 end
 
 endmodule

@@ -14,9 +14,9 @@ module image_rom (
 
 
     initial begin
-        $readmemh("../Graphics/micro.data", micro_normal);
-        $readmemh("../Graphics/micro_curled.data", micro_curled);
-        $readmemh("../Graphics/micro_jump.data", micro_jump);
+        $readmemh("../../rtl/Graphics/micro.data", micro_normal);
+        $readmemh("../../rtl/Graphics/micro_curled.data", micro_curled);
+        $readmemh("../../rtl/Graphics/micro_jump.data", micro_jump);
     end
 
     /**

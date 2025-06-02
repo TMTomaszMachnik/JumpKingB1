@@ -67,17 +67,12 @@ module top_vga (
     wire key_right;
     wire key_left;
 
-    logic         CLK50MHZ=0;
-
-    always @(posedge(clk100))begin
-        CLK50MHZ<=~CLK50MHZ;
-    end
     /**
      * Submodules instances
      */
 
     // keyboard_ctl u_keyboard_ctl (
-    //     .clk(CLK50MHZ),
+    //     .clk(clk100),
     //     .rst(rst),
     //     .ps2_clk(ps2_clk),
     //     .ps2_data(ps2_data),
@@ -85,6 +80,7 @@ module top_vga (
     //     .key_right(key_right),
     //     .key_left(key_left)
     // );
+
 
     vga_timing u_vga_timing (
         .clk,
@@ -122,6 +118,17 @@ module top_vga (
         .address(address),
         .character_state(char_state)
     );
+
+    // draw_rect_ctl u_draw_rect_ctl(
+    //     .clk(clk100),
+    //     .rst(rst),
+    //     .key_space(key_space),
+    //     .key_right(key_right),
+    //     .key_left(key_left),
+    //     .value_x(x_pos),
+    //     .value_y(y_pos),
+    //     .character_state(char_state)
+    // );
 
     draw_rect_ctl u_draw_rect_ctl(
         .clk(clk100),
