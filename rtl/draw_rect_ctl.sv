@@ -27,7 +27,7 @@ import vga_pkg::*;
 // local parameters
 //------------------------------------------------------------------------------
 localparam CLK_FREQ = 100_000_000;
-localparam CTR_FREQ = 100;
+localparam CTR_FREQ = 100;//100_000_00;
 localparam CTR_MAX = (CLK_FREQ / CTR_FREQ) - 1;
 localparam DIV = 10;
 localparam A = 2; 
@@ -70,12 +70,12 @@ initial $readmemh("../../rtl/Graphics/collision_map.data", collision_map);
 
 logic [6:0] tile_x;
 logic [6:0] tile_x_l, tile_x_r;
-logic [5:0] tile_y_l, tile_y_r, tile_y_below, tile_y_above;
-logic [11:0] tile_idx_l, tile_idx_r, tile_idx_below, tile_idx_above;
-logic [1:0] tile_l, tile_r, tile_below, tile_above;
+logic [5:0] tile_y_l, tile_y_r,  tile_y_above;
+logic [11:0] tile_idx_l, tile_idx_r,  tile_idx_above;
+logic [1:0] tile_l_bottom, tile_r_bottom, tile_r, tile_l, tile_above;
 logic [11:0] y_jump_start, y_jump_start_nxt;
 
-localparam TILES_X = 64;  // 1024/16 rounded up
+localparam TILES_X = 64;  // 1024/16 rounded up                                                                     
 localparam TILES_Y = 48;  // 
 localparam y_start = VER_PIXELS - REC_HEIGHT - 50; //  VER_PIXELS - REC_HEIGHT - 50;
 localparam x_start = 12'd50; //12'd50;
@@ -105,7 +105,7 @@ always_comb begin : state_comb_blk
                 state_nxt = RIGHT;
             end else if (key_left) begin
                 state_nxt = LEFT;
-            end
+            end 
         end
 
         JUMP: begin
@@ -115,19 +115,24 @@ always_comb begin : state_comb_blk
         end
 
         FALLING: begin
-            if(bottom_reached  || (tile_below == 2'b01)) begin 
-                state_nxt = IDLE;
-            end
-        end
-        LEFT: begin
-            if (!key_left) begin
+            if(bottom_reached) begin 
                 state_nxt = IDLE;
             end
         end
 
+        LEFT: begin
+            if (!key_left) begin
+                state_nxt = IDLE;
+            end else if (tile_l_bottom == 2'b00 && tile_r_bottom == 2'b00) begin
+                state_nxt = FALLING;
+            end
+        end
+        
         RIGHT: begin
             if (!key_right) begin
                 state_nxt = IDLE;
+            end else if (tile_l_bottom == 2'b00 && tile_r_bottom == 2'b00) begin
+                state_nxt = FALLING;
             end
         end
         JUMP_PREP: begin
@@ -194,7 +199,7 @@ always_comb begin : out_comb_blk
     // Default assignments
     value_x_nxt = value_x;
     value_y_nxt = value_y;
-    y_pos_nxt = y_pos;
+    y_pos_nxt = value_y;
     counter_nxt = counter;
     vel_time_nxt = vel_time;
     character_state_nxt = character_state;
@@ -202,25 +207,38 @@ always_comb begin : out_comb_blk
     bottom_reached = 1'b0;
     y_jump_start_nxt = y_jump_start;
 
-    tile_y_l = value_y >> 4;
+
+    tile_y_l = (value_y + ((REC_HEIGHT)/2)) >> 4;
     tile_x_l = (value_x - 1) >> 4;
-    tile_idx_l = tile_y_l * 64 + tile_x_l;
+    tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
+                ? tile_y_l * TILES_X + tile_x_l 
+                : 1;                            
     tile_l = collision_map[tile_idx_l];
 
-    tile_y_r = value_y >> 4;                  
+    tile_y_r = (value_y + (REC_HEIGHT)/2) >> 4;                  
     tile_x_r = (value_x + REC_WIDTH - 1) >> 4;     
     tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
                 ? tile_y_r * TILES_X + tile_x_r 
                 : 1;                            
     tile_r = collision_map[tile_idx_r];
 
-    tile_y_below = (value_y + REC_HEIGHT) >> 4;
-    tile_x       = value_x >> 4;
-    tile_idx_below = (tile_y_below < TILES_Y && tile_x < TILES_X) 
-                   ? tile_y_below * TILES_X + tile_x 
-                   : 1;  
-    tile_below = collision_map[tile_idx_below];
+    tile_y_l = (value_y + REC_HEIGHT + 1) >> 4; 
+    tile_x_l = (value_x - 1) >> 4;
+    tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
+                ? tile_y_l * TILES_X + tile_x_l 
+                : 1;
+    tile_l_bottom = collision_map[tile_idx_l];
 
+    tile_y_r = (value_y + REC_HEIGHT + 1) >> 4;
+    tile_x_r = (value_x + REC_WIDTH - 1) >> 4;
+    tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
+                ? tile_y_r * TILES_X + tile_x_r 
+                : 1;
+    tile_r_bottom = collision_map[tile_idx_r];
+
+
+
+    tile_x       = (value_x - 1) >> 4;
     tile_y_above = (value_y - 1) >> 4;
     tile_idx_above = tile_y_above * 64 + tile_x;
     tile_above = collision_map[tile_idx_above];
@@ -230,7 +248,7 @@ always_comb begin : out_comb_blk
             y_jump_start_nxt = y_jump_start;
             value_x_nxt = value_x;
             value_y_nxt = value_y;
-            y_pos_nxt = y_pos;
+            y_pos_nxt = value_y;
             counter_nxt = counter;
             vel_time_nxt = vel_time;
             character_state_nxt = 2'b00;
@@ -243,7 +261,7 @@ always_comb begin : out_comb_blk
             if(key_space) begin
                 vel_time_nxt = '0;
                 counter_nxt = '0;
-                y_jump_start = value_y_nxt;
+                y_jump_start_nxt = value_y;
             end else begin
                 counter_nxt = counter + 1;
             end
@@ -251,19 +269,18 @@ always_comb begin : out_comb_blk
 
         JUMP: begin
             character_state_nxt = 2'b01;
-            if(counter == CTR_MAX) begin
+            if(counter == 2*CTR_MAX) begin
                 vel_time_nxt = vel_time + 1; // Domyślne zwiększenie czasu
                 value_y_nxt = y_jump_start + ((A*vel_time*vel_time)/(2*DIV)) - (VELOCITY*vel_time);
                 y_pos_nxt = value_y_nxt;      
 
-                if((facing && (tile_r == 2'b00)) || (tile_l == 2'b01)) begin
+                if((facing && (tile_r_bottom == 2'b00)) || (tile_l_bottom == 2'b01)) begin
                     value_x_nxt = value_x + 3;
-                end else if ((!facing && tile_l == 2'b00) || (tile_r == 2'b01)) begin
+                end else if ((!facing && tile_l_bottom == 2'b00) || (tile_r_bottom == 2'b01)) begin
                     value_x_nxt = value_x - 3;
                 end else begin
                     value_x_nxt = value_x; 
                 end
-
                 if( (A*vel_time) >= (VELOCITY * DIV) ) begin 
                     vel_time_nxt = 0;        
                     top_reached = 1;     
@@ -275,17 +292,28 @@ always_comb begin : out_comb_blk
             end
         end
 
+
         FALLING: begin
             character_state_nxt = 2'b10;
-            if(counter == CTR_MAX) begin
+            if(counter == 2*CTR_MAX) begin
                 vel_time_nxt = vel_time + 1;
                 value_y_nxt = y_pos + ((A*vel_time*vel_time)/(2*DIV));
-                
-                if(value_y_nxt >= y_start) begin
-                    value_y_nxt = y_start;
+                y_pos_nxt = value_y_nxt;
+                    //if(value_y_nxt >= y_start || tile_r_bottom == 2'b01 || tile_l_bottom == 2'b01) begin
+                    // if(value_y_nxt >= y_start) begin
+                   //     value_y_nxt = y_start; 
+                    // end else if (tile_r_bottom == 2'b01) begin
+                    //     value_y_nxt = (tile_y_r - REC_HEIGHT) << 4; 
+                    // end else if (tile_l_bottom == 2'b01) begin
+                    //     value_y_nxt = (tile_y_l  - REC_HEIGHT) << 4; 
+                    // end
+                    if (tile_r_bottom == 2'b01 || tile_l_bottom == 2'b01) begin
+                    value_y_nxt = (tile_y_l << 4) - REC_HEIGHT;
+                    bottom_reached = 1;
+                    vel_time_nxt = 0;
                     vel_time_nxt = 0;
                     bottom_reached = 1;
-                    y_jump_start_nxt = y_start; // Set new jump base
+                    y_jump_start_nxt = value_y_nxt; // Set new jump base
                 end else begin
                     y_jump_start_nxt = y_pos; // Keep previous value
                 end
@@ -311,7 +339,7 @@ always_comb begin : out_comb_blk
 
         RIGHT: begin
             character_state_nxt = 2'b01;
-            if (value_x >= VER_PIXELS - REC_WIDTH - 1 || (tile_r == 2'b01)) begin
+            if (value_x >= HOR_PIXELS - REC_WIDTH - 1 || (tile_r == 2'b01)) begin
             end else if (vel_time >= (CTR_MAX * 4)) begin
                 value_x_nxt = value_x + 16;
                 vel_time_nxt = 0;
