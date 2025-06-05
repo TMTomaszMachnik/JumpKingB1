@@ -30,8 +30,9 @@ localparam CLK_FREQ = 100_000_000;
 localparam CTR_FREQ = 100;//100_000_00;
 localparam CTR_MAX = (CLK_FREQ / CTR_FREQ) - 1;
 localparam DIV = 10;
-localparam A = 2; 
-localparam VELOCITY = 10;
+localparam A = 4; 
+localparam VELOCITY = 1;
+localparam MAX_VELOCITY = 70;
 localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 
@@ -42,6 +43,8 @@ logic [31:0] vel_time; // 10ms
 logic [31:0] vel_time_nxt;
 logic [31:0] counter;
 logic [31:0] counter_nxt;
+logic [31:0] counter_sd;
+logic [31:0] counter_sd_nxt;
 logic [11:0] value_x_nxt;
 logic [11:0] value_y_nxt;
 logic top_reached;
@@ -50,6 +53,10 @@ logic [1:0] character_state_nxt;
 logic [11:0] y_pos; 
 logic [11:0] y_pos_nxt;
 logic facing;
+logic facing_nxt;
+logic [6:0] jump_vel;
+logic [6:0] jump_vel_nxt;
+
 
 typedef enum logic [2:0] {
     IDLE    = 3'b000,
@@ -152,7 +159,9 @@ always_ff @(posedge clk) begin : out_reg_blk
         value_x <= x_start;
         value_y <= y_start;
         y_pos <= y_start;
-        character_state <= 2'b00; 
+        character_state <= 2'b00;
+        jump_vel <= VELOCITY; 
+        counter_sd <= '0;
     end
     else begin : out_reg_run_blk
         vel_time <= vel_time_nxt;
@@ -161,6 +170,8 @@ always_ff @(posedge clk) begin : out_reg_blk
         value_y <= value_y_nxt;
         character_state <= character_state_nxt;
         y_pos <= y_pos_nxt;
+        jump_vel <= jump_vel_nxt;
+        counter_sd <= counter_sd_nxt;
     end
 end
 
@@ -177,7 +188,7 @@ always_ff @(posedge clk) begin
                 facing <= 1'b1; 
             end
             default: begin
-                facing <= facing; 
+                facing <= facing_nxt; 
             end
         endcase
     end
@@ -206,6 +217,9 @@ always_comb begin : out_comb_blk
     top_reached = 1'b0;
     bottom_reached = 1'b0;
     y_jump_start_nxt = y_jump_start;
+    jump_vel_nxt = jump_vel;
+    counter_sd_nxt = counter_sd;
+    facing_nxt = facing;
 
 
     tile_y_l = (value_y + ((REC_HEIGHT)/2)) >> 4;
@@ -249,19 +263,27 @@ always_comb begin : out_comb_blk
             value_x_nxt = value_x;
             value_y_nxt = value_y;
             y_pos_nxt = value_y;
-            counter_nxt = counter;
+            counter_nxt = '0;
+            counter_sd_nxt = '0;
             vel_time_nxt = vel_time;
             character_state_nxt = 2'b00;
             top_reached = 1'b0;
             bottom_reached = 1'b0;
+            jump_vel_nxt = VELOCITY;
         end
 
         JUMP_PREP: begin
             character_state_nxt = 2'b01;
             if(key_space) begin
                 vel_time_nxt = '0;
-                counter_nxt = '0;
                 y_jump_start_nxt = value_y;
+            end
+            if (counter == 3*CTR_MAX) begin
+                counter_nxt = 0;
+                jump_vel_nxt = jump_vel + 2; // Set initial jump velocity
+                if(jump_vel >= MAX_VELOCITY) begin
+                    jump_vel_nxt = MAX_VELOCITY; // Reset jump velocity
+                end 
             end else begin
                 counter_nxt = counter + 1;
             end
@@ -269,18 +291,21 @@ always_comb begin : out_comb_blk
 
         JUMP: begin
             character_state_nxt = 2'b01;
-            if(counter == 2*CTR_MAX) begin
-                vel_time_nxt = vel_time + 1; // Domyślne zwiększenie czasu
-                value_y_nxt = y_jump_start + ((A*vel_time*vel_time)/(2*DIV)) - (VELOCITY*vel_time);
-                y_pos_nxt = value_y_nxt;      
 
-                if((facing && (tile_r_bottom == 2'b00)) || (tile_l_bottom == 2'b01)) begin
-                    value_x_nxt = value_x + 3;
-                end else if ((!facing && tile_l_bottom == 2'b00) || (tile_r_bottom == 2'b01)) begin
-                    value_x_nxt = value_x - 3;
-                end else begin
-                    value_x_nxt = value_x; 
-                end
+
+            if((tile_l == 2'b01)) begin
+                facing_nxt = 1'b1; // Facing left
+            end else if ((tile_r == 2'b01)) begin
+                facing_nxt = 1'b0; // Facing right
+            end else begin
+                facing_nxt = facing; // Keep previous value
+            end
+
+
+            if(counter == 3*CTR_MAX) begin
+                vel_time_nxt = vel_time + 1; // Domyślne zwiększenie czasu
+                value_y_nxt = y_jump_start + ((A*vel_time*vel_time)/(2*DIV)) - (jump_vel*vel_time);
+                y_pos_nxt = value_y_nxt;      
                 if( (A*vel_time) >= (VELOCITY * DIV) ) begin 
                     vel_time_nxt = 0;        
                     top_reached = 1;     
@@ -290,12 +315,35 @@ always_comb begin : out_comb_blk
             else begin
                 counter_nxt = counter + 1;
             end
+
+            if(counter_sd == CTR_MAX) begin
+                counter_sd_nxt = 0;
+
+                if(facing_nxt) begin
+                    value_x_nxt = value_x + 3; // Move right
+                end else begin
+                    value_x_nxt = value_x - 3; // Move left
+                end
+
+            end else begin
+                counter_sd_nxt = counter_sd + 1;
+            end
+
         end
 
 
         FALLING: begin
             character_state_nxt = 2'b10;
-            if(counter == 2*CTR_MAX) begin
+
+            if((tile_l== 2'b01)) begin
+                facing_nxt = 1'b1; // Facing left
+            end else if ((tile_r == 2'b01)) begin
+                facing_nxt = 1'b0; // Facing right
+            end else begin
+                facing_nxt = facing; // Keep previous value
+            end
+
+            if(counter == 3*CTR_MAX) begin
                 vel_time_nxt = vel_time + 1;
                 value_y_nxt = y_pos + ((A*vel_time*vel_time)/(2*DIV));
                 y_pos_nxt = value_y_nxt;
@@ -323,6 +371,21 @@ always_comb begin : out_comb_blk
                 counter_nxt = counter + 1;
                 y_jump_start_nxt = y_jump_start; // Keep previous value
             end
+            
+            if(counter_sd == CTR_MAX) begin
+                counter_sd_nxt = 0;
+
+                if(facing_nxt) begin
+                    value_x_nxt = value_x + 3; // Move right
+                end else begin
+                    value_x_nxt = value_x - 3; // Move left
+                end
+
+            end else begin
+                counter_sd_nxt = counter_sd + 1;
+            end
+
+
         end
         
         
