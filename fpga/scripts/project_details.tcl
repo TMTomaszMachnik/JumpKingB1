@@ -62,8 +62,8 @@ set verilog_files {
 #Specify files for a memory initialization     -- EDIT
 set mem_files {
   ../rtl/Graphics/micro.data
-  ../rtl/Graphics/collision_map.data
-  ../rtl/Graphics/background.data
+  ../rtl/Graphics/bg0.data
+  ../rtl/Graphics/bg1.data
   ../rtl/Graphics/micro_curled.data
   ../rtl/Graphics/micro_jump.data
 }

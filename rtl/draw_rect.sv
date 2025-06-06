@@ -23,7 +23,6 @@ localparam REC_HEIGHT = 63;
 
 logic [11:0] rgb_nxt;
 
-
 localparam C_DELAY_LEN = 3;
 
 logic [C_DELAY_LEN-1:0][10:0] hcount_buf;

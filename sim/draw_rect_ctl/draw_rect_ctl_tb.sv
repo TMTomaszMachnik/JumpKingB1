@@ -15,13 +15,14 @@ module draw_rect_ctl_tb;
     reg key_space;
     reg key_left;
     reg key_right;
-    logic [1:0] collision_map [0:3071];
-    initial $readmemh("../../rtl/Graphics/collision_map.data", collision_map);
 
     // Outputs
     wire [11:0] value_x;
     wire [11:0] value_y;
     wire [1:0] character_state;
+    wire [1:0] level;
+
+    vga_if vga_in();
 
     // Instantiate the Unit Under Test (UUT)
     draw_rect_ctl uut (
@@ -32,8 +33,12 @@ module draw_rect_ctl_tb;
         .key_right(key_right),
         .value_x(value_x),
         .value_y(value_y),
-        .character_state(character_state)
+        .character_state(character_state),
+        .level(level),
+        .vga_in(vga_in)
     );
+
+
 
     // Clock generation
     always #5 clk = ~clk;
@@ -82,9 +87,10 @@ module draw_rect_ctl_tb;
         // Test JUMP sequence
         $display("Testing JUMP sequence");
         key_space = 1;
-        #20;
+        #1000;
         key_space = 0;
         
+        force uut.collision = 3'b011;
         // Wait for jump to complete
         #20000;
         
@@ -133,7 +139,8 @@ module draw_rect_ctl_tb;
 
     // Monitor the outputs
     always @(posedge clk) begin
-        $display("Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, tile_above = %b,  tile_r = %b, tile_l = %b, facing = %d, tile_idx_r = %d",
+        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, collision = %b, jump_power = %d",
+                uut.level,
                 $time, 
                 value_x, 
                 value_y, 
@@ -142,11 +149,8 @@ module draw_rect_ctl_tb;
                 key_space,
                 key_left,
                 key_right,
-                uut.tile_above,
-                uut.tile_r_bottom,
-                uut.tile_l_bottom,
-                uut.facing,
-                uut.tile_idx_r
+                uut.collision,
+                uut.jump_vel
                 );
         
         // Add assertions to verify behavior

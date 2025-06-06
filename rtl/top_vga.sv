@@ -35,7 +35,8 @@ module top_vga (
 
     vga_if vga_if_t_bg();
     vga_if vga_if_bg_r();
-    vga_if vga_if_r_out();
+    vga_if vga_if_r_ctl();
+
 
     /**
      * Local variables and signals
@@ -46,9 +47,9 @@ module top_vga (
      * Signals assignments
      */
     
-    assign vs = vga_if_r_out.vsync;
-    assign hs = vga_if_r_out.hsync;
-    assign {r,g,b} = vga_if_r_out.rgb;
+    assign vs = vga_if_r_ctl.vsync;
+    assign hs = vga_if_r_ctl.hsync;
+    assign {r,g,b} = vga_if_r_ctl.rgb;
 
     wire [11:0] x_pos;
     wire [11:0] y_pos;
@@ -66,6 +67,8 @@ module top_vga (
     wire key_space;
     wire key_right;
     wire key_left;
+
+    wire [1:0] current_level;
 
     /**
      * Submodules instances
@@ -96,6 +99,7 @@ module top_vga (
     draw_bg u_draw_bg (
         .clk,
         .rst,
+        .level(current_level),
         .vga_in(vga_if_t_bg.in),
         .vga_out(vga_if_bg_r.out)
     );
@@ -105,7 +109,7 @@ module top_vga (
         .clk,
         .rst,
         .vga_in(vga_if_bg_r.in),
-        .vga_out(vga_if_r_out.out),
+        .vga_out(vga_if_r_ctl.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),
         .x_value(x_pos),
@@ -131,14 +135,16 @@ module top_vga (
     // );
 
     draw_rect_ctl u_draw_rect_ctl(
-        .clk(clk100),
+        .clk(clk),
         .rst(rst),
         .key_space(space),
         .key_right(bright),
         .key_left(bleft),
         .value_x(x_pos),
         .value_y(y_pos),
-        .character_state(char_state)
+        .character_state(char_state),
+        .level(current_level),
+        .vga_in(vga_if_bg_r.in)
     );
 
 
