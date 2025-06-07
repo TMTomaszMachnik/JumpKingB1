@@ -240,37 +240,6 @@ end
 // output logic
 //------------------------------------------------------------------------------
 
-always_comb begin
-
-    collision_left_nxt = '0;
-    collision_right_nxt = '0;
-    collision_bot_nxt = '0;
-    collision_top_nxt = '0;
-
-    if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_left_nxt = '1;
-        end 
-    end 
-    if(vga_in.hcount == (value_x + REC_WIDTH - 1) && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // right
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_right_nxt = '1;
-        end 
-    end
-    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 1)) begin // bot whole
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_bot_nxt = '1;
-        end
-    end 
-    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_top_nxt = '1;
-        end 
-    end
-end
-
-
-
 
 always_comb begin : out_comb_blk
     // Default assignments
@@ -288,41 +257,48 @@ always_comb begin : out_comb_blk
     facing_nxt = facing;
     level_nxt = 2'b00; // Default level
 
+    collision_left_nxt = collision_left;
+    collision_right_nxt = collision_right;
+    collision_bot_nxt = collision_bot;
+    collision_top_nxt = collision_top;
 
-    // tile_y_l = (value_y + ((REC_HEIGHT)/2)) >> 4;
-    // tile_x_l = (value_x - 1) >> 4;
-    // tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
-    //             ? tile_y_l * TILES_X + tile_x_l 
-    //             : 1;                            
-    // tile_l = collision_map[tile_idx_l];
+    if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_left_nxt = '1;
+        end else begin
+            collision_left_nxt = '0;
+        end
 
-    // tile_y_r = (value_y + (REC_HEIGHT)/2) >> 4;                  
-    // tile_x_r = (value_x + REC_WIDTH - 1) >> 4;     
-    // tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
-    //             ? tile_y_r * TILES_X + tile_x_r 
-    //             : 1;                            
-    // tile_r = collision_map[tile_idx_r];
+    end 
+    if(vga_in.hcount == (value_x + REC_WIDTH - 1) && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // right
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_right_nxt = '1;
+        end else begin
+            collision_right_nxt = '0;
+        end 
+    end
+    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 1)) begin // bot whole
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_bot_nxt = '1;
+        end else begin
+            collision_bot_nxt = '0;
+        end
+    end 
+    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_top_nxt = '1;
+        end else begin
+            collision_top_nxt = '0;
+        end
+    end
 
-    // tile_y_l = (value_y + REC_HEIGHT + 1) >> 4; 
-    // tile_x_l = (value_x - 1) >> 4;
-    // tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
-    //             ? tile_y_l * TILES_X + tile_x_l 
-    //             : 1;
-    // tile_l_bottom = collision_map[tile_idx_l];
-
-    // tile_y_r = (value_y + REC_HEIGHT + 1) >> 4;
-    // tile_x_r = (value_x + REC_WIDTH - 1) >> 4;
-    // tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
-    //             ? tile_y_r * TILES_X + tile_x_r 
-    //             : 1;
-    // tile_r_bottom = collision_map[tile_idx_r];
-
-
-
-    // tile_x       = (value_x - 1) >> 4;
-    // tile_y_above = (value_y - 1) >> 4;
-    // tile_idx_above = tile_y_above * 64 + tile_x;
-    // tile_above = collision_map[tile_idx_above];
+    if(collision_left) begin
+        facing_nxt = 1'b1; // Facing left
+    end else if (collision_right) begin
+        facing_nxt = 1'b0; // Facing right
+    end else begin
+        facing_nxt = facing; // Keep previous value
+    end
 
     case(state)
         IDLE: begin
@@ -342,7 +318,9 @@ always_comb begin : out_comb_blk
                 if(vga_in.rgb == 12'h2_B_4) begin
                     value_y_nxt = value_y - 6;
                 end
-            end 
+            end
+            
+            
         end
 
         JUMP_PREP: begin
@@ -452,27 +430,44 @@ always_comb begin : out_comb_blk
         end
         
         
-        LEFT: begin
-            character_state_nxt = 2'b01;
-            if (value_x <= x_start || (collision_left)) begin
-            end else if (vel_time >= (CTR_MAX * 4)) begin
-                value_x_nxt = value_x - 16;
-                vel_time_nxt = 0;
-            end else begin
-                vel_time_nxt = vel_time + 1;
-            end
-        end
+            // … inside your always_comb out_comb_blk, replace the LEFT/RIGHT cases with:
 
-        RIGHT: begin
-            character_state_nxt = 2'b01;
-            if (value_x >= HOR_PIXELS - REC_WIDTH - 1 ||  (collision_right)) begin
-            end else if (vel_time >= (CTR_MAX * 4)) begin
-                value_x_nxt = value_x + 16;
-                vel_time_nxt = 0;
-            end else begin
-                vel_time_nxt = vel_time + 1;
-            end
+    LEFT: begin
+        character_state_nxt = 2'b01;
+        // if wall on left edge, hold position and timer
+        if (collision_left) begin
+            value_x_nxt  = value_x;
+            counter_sd_nxt = counter_sd; 
         end
+        // otherwise, every CTR_MAX ticks take a 3-pixel step left
+        else if (counter_sd == CTR_MAX) begin
+            counter_sd_nxt = 0;
+            value_x_nxt  = value_x - 3;
+        end
+        // else just advance the step timer
+        else begin
+            counter_sd_nxt = counter_sd + 1;
+        end
+    end
+
+    RIGHT: begin
+        character_state_nxt = 2'b01;
+        // if wall on right edge, hold position and timer
+        if (collision_right) begin
+            value_x_nxt   = value_x;
+            counter_sd_nxt = counter_sd;
+        end
+        // otherwise, every CTR_MAX ticks take a 3-pixel step right
+        else if (counter_sd == CTR_MAX) begin
+            counter_sd_nxt = 0;
+            value_x_nxt  = value_x + 3;
+        end
+        // else just advance the step timer
+        else begin
+            counter_sd_nxt = counter_sd + 1;
+        end
+    end
+
 
         default: begin
         end
