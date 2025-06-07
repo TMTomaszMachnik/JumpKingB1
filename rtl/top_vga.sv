@@ -34,8 +34,9 @@ module top_vga (
     timeprecision 1ps;
 
     vga_if vga_if_t_bg();
-    vga_if vga_if_bg_r();
-    vga_if vga_if_r_ctl();
+    vga_if vga_if_ctl_r();
+    vga_if vga_if_r_out();
+    vga_if vga_if_bg_ctl();
 
 
     /**
@@ -47,9 +48,9 @@ module top_vga (
      * Signals assignments
      */
     
-    assign vs = vga_if_r_ctl.vsync;
-    assign hs = vga_if_r_ctl.hsync;
-    assign {r,g,b} = vga_if_r_ctl.rgb;
+    assign vs = vga_if_r_out.vsync;
+    assign hs = vga_if_r_out.hsync;
+    assign {r,g,b} = vga_if_r_out.rgb;
 
     wire [11:0] x_pos;
     wire [11:0] y_pos;
@@ -101,15 +102,28 @@ module top_vga (
         .rst,
         .level(current_level),
         .vga_in(vga_if_t_bg.in),
-        .vga_out(vga_if_bg_r.out)
+        .vga_out(vga_if_bg_ctl.out)
     );
-
+    
+    draw_rect_ctl u_draw_rect_ctl(
+        .clk(clk100),
+        .rst(rst),
+        .key_space(space),
+        .key_right(bright),
+        .key_left(bleft),
+        .value_x(x_pos),
+        .value_y(y_pos),
+        .character_state(char_state),
+        .level(current_level),
+        .vga_in(vga_if_bg_ctl.in),
+        .vga_out(vga_if_ctl_r.out)
+    );
 
     draw_rect u_draw_rect (
         .clk,
         .rst,
-        .vga_in(vga_if_bg_r.in),
-        .vga_out(vga_if_r_ctl.out),
+        .vga_in(vga_if_ctl_r.in),
+        .vga_out(vga_if_r_out.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),
         .x_value(x_pos),
@@ -133,20 +147,5 @@ module top_vga (
     //     .value_y(y_pos),
     //     .character_state(char_state)
     // );
-
-    draw_rect_ctl u_draw_rect_ctl(
-        .clk(clk),
-        .rst(rst),
-        .key_space(space),
-        .key_right(bright),
-        .key_left(bleft),
-        .value_x(x_pos),
-        .value_y(y_pos),
-        .character_state(char_state),
-        .level(current_level),
-        .vga_in(vga_if_bg_r.in)
-    );
-
-
 
 endmodule
