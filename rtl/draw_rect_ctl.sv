@@ -29,7 +29,7 @@ import vga_pkg::*;
 //------------------------------------------------------------------------------
 // local parameters
 //------------------------------------------------------------------------------
-localparam CLK_FREQ = 65_000_000;
+localparam CLK_FREQ = 100_000_000;
 localparam CTR_FREQ = 100;//100_000_00;
 localparam CTR_MAX = (CLK_FREQ / CTR_FREQ) - 1;
 localparam DIV = 10;
@@ -39,6 +39,7 @@ localparam MAX_VELOCITY = 70;
 localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 localparam OFFSET = 12'd10;
+localparam MAX_LEVEL = 4;
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
@@ -60,6 +61,8 @@ logic facing_nxt;
 logic [6:0] jump_vel;
 logic [6:0] jump_vel_nxt;
 
+logic signed [15:0] value_y_temp; 
+
 logic collision_left, collision_right, collision_bot, collision_top;
 logic collision_left_nxt, collision_right_nxt, collision_bot_nxt, collision_top_nxt;
 
@@ -76,18 +79,14 @@ state_t state, state_nxt;
 
 
 
-// logic [6:0] tile_x;
-// logic [6:0] tile_x_l, tile_x_r;
-// logic [5:0] tile_y_l, tile_y_r,  tile_y_above;
-// logic [11:0] tile_idx_l, tile_idx_r,  tile_idx_above;
-// logic [1:0] tile_l_bottom, tile_r_bottom, tile_r, tile_l, tile_above;
 logic [11:0] y_jump_start, y_jump_start_nxt;
 logic [1:0] level_nxt;
 // localparam TILES_X = 64;  // 1024/16 rounded up                                                                     
 // localparam TILES_Y = 48;  // 
-localparam y_start = VER_PIXELS - REC_HEIGHT - 64; //  VER_PIXELS - REC_HEIGHT - 50;
+localparam y_start = VER_PIXELS - REC_HEIGHT - 64;
 localparam x_start = 12'd64; //12'd50;
-
+logic [5:0] fall_bottom;
+logic [5:0] fall_bottom_nxt;
 
 //------------------------------------------------------------------------------
 // state sequential with synchronous reset
@@ -171,6 +170,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= 1'b0;
         collision_bot <= 1'b0;
         collision_top <= 1'b0;
+        fall_bottom <= y_start;
     end
     else begin : out_reg_run_blk
         vel_time <= vel_time_nxt;
@@ -186,6 +186,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= collision_right_nxt;
         collision_bot <= collision_bot_nxt;
         collision_top <= collision_top_nxt;
+        fall_bottom <= fall_bottom_nxt;
     end
 end
 
@@ -286,43 +287,8 @@ always_comb begin : out_comb_blk
     jump_vel_nxt = jump_vel;
     counter_sd_nxt = counter_sd;
     facing_nxt = facing;
-    level_nxt = 2'b00; // Default level
-
-
-    // tile_y_l = (value_y + ((REC_HEIGHT)/2)) >> 4;
-    // tile_x_l = (value_x - 1) >> 4;
-    // tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
-    //             ? tile_y_l * TILES_X + tile_x_l 
-    //             : 1;                            
-    // tile_l = collision_map[tile_idx_l];
-
-    // tile_y_r = (value_y + (REC_HEIGHT)/2) >> 4;                  
-    // tile_x_r = (value_x + REC_WIDTH - 1) >> 4;     
-    // tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
-    //             ? tile_y_r * TILES_X + tile_x_r 
-    //             : 1;                            
-    // tile_r = collision_map[tile_idx_r];
-
-    // tile_y_l = (value_y + REC_HEIGHT + 1) >> 4; 
-    // tile_x_l = (value_x - 1) >> 4;
-    // tile_idx_l = (tile_y_l < TILES_Y && tile_x_l < TILES_X) 
-    //             ? tile_y_l * TILES_X + tile_x_l 
-    //             : 1;
-    // tile_l_bottom = collision_map[tile_idx_l];
-
-    // tile_y_r = (value_y + REC_HEIGHT + 1) >> 4;
-    // tile_x_r = (value_x + REC_WIDTH - 1) >> 4;
-    // tile_idx_r = (tile_y_r < TILES_Y && tile_x_r < TILES_X) 
-    //             ? tile_y_r * TILES_X + tile_x_r 
-    //             : 1;
-    // tile_r_bottom = collision_map[tile_idx_r];
-
-
-
-    // tile_x       = (value_x - 1) >> 4;
-    // tile_y_above = (value_y - 1) >> 4;
-    // tile_idx_above = tile_y_above * 64 + tile_x;
-    // tile_above = collision_map[tile_idx_above];
+    level_nxt = level; // Default level
+    fall_bottom_nxt = fall_bottom;
 
     case(state)
         IDLE: begin
@@ -364,93 +330,124 @@ always_comb begin : out_comb_blk
 
         JUMP: begin
             character_state_nxt = 2'b01;
-
-
+        
             if(collision_left) begin
-                facing_nxt = 1'b1; // Facing left
+                facing_nxt = 1'b1;
             end else if (collision_right) begin
-                facing_nxt = 1'b0; // Facing right
+                facing_nxt = 1'b0; 
             end else begin
-                facing_nxt = facing; // Keep previous value
+                facing_nxt = facing; 
             end
 
 
-            if(counter == 3*CTR_MAX) begin
-                vel_time_nxt = vel_time + 1; // Domyślne zwiększenie czasu
-                value_y_nxt = y_jump_start + ((A*vel_time*vel_time)/(2*DIV)) - (jump_vel*vel_time);
-                y_pos_nxt = value_y_nxt;      
-                if( (A*vel_time) >= (VELOCITY * DIV) ) begin 
-                    vel_time_nxt = 0;        
-                    top_reached = 1;     
-                end
+            if(counter == 3*CTR_MAX && value_y > 5) begin
                 counter_nxt = 0;
-            end
-            else begin
-                counter_nxt = counter + 1;
-            end
+                vel_time_nxt = vel_time + 1;
+                value_y_temp = y_jump_start + ((A * vel_time * vel_time) / (2 * DIV)) - (jump_vel * vel_time);
+                if (value_y_temp > VER_PIXELS) begin
+                    value_y_temp = VER_PIXELS;
+                end else if (value_y_temp < 0) begin
+                    value_y_temp = 0;
+                end
+                
+                value_y_nxt = value_y_temp;
+                y_pos_nxt   = value_y_temp;
 
+                if((A * vel_time) >= (VELOCITY * DIV)) begin
+                    vel_time_nxt = 0;
+                    top_reached = 1;
+                end
+            end else if (value_y <= 5) begin  
+                    if (level < MAX_LEVEL) begin
+                        level_nxt = level + 1;        
+                        value_y_nxt = VER_PIXELS - 10;  
+                        y_pos_nxt = value_y_nxt;
+                        fall_bottom_nxt = VER_PIXELS;   
+                        y_jump_start_nxt  = value_y_nxt; // ← THIS is critical!
+                    end 
+                end else begin 
+                counter_nxt = counter + 1;
+                
+            end 
+
+            // Horizontal movement during jump
             if(counter_sd == CTR_MAX && value_x >= x_start) begin
                 counter_sd_nxt = 0;
-    
+
                 if(facing_nxt) begin
                     value_x_nxt = value_x + 3; // Move right
                 end else begin
                     value_x_nxt = value_x - 3; // Move left
                 end
-
             end else begin
                 counter_sd_nxt = counter_sd + 1;
             end
-
         end
-
-
+        
         FALLING: begin
             character_state_nxt = 2'b10;
-
-            if(collision_left) begin
-                facing_nxt = 1'b1; // Facing left
+            
+ 
+            if (collision_left) begin
+                facing_nxt = 1'b1; 
             end else if (collision_right) begin
-                facing_nxt = 1'b0; // Facing right
+                facing_nxt = 1'b0; 
             end else begin
-                facing_nxt = facing; // Keep previous value
+                facing_nxt = facing; 
             end
 
-            if(counter == 3*CTR_MAX  && value_y < y_start) begin
+            if (counter == 3 * CTR_MAX && value_y <= VER_PIXELS) begin
+                counter_nxt = 0;    
                 vel_time_nxt = vel_time + 1;
-                value_y_nxt = y_pos + ((A*vel_time*vel_time)/(2*DIV));
-                y_pos_nxt = value_y_nxt;
-                    if (collision_bot) begin
+                // value_y_nxt = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
+                // y_pos_nxt = value_y_nxt;
+                
+                value_y_temp = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
+                if (value_y_temp > VER_PIXELS) begin
+                    value_y_temp = VER_PIXELS;
+                end else if (value_y_temp < 0) begin
+                    value_y_temp = 0;
+                end
+                
+                value_y_nxt = value_y_temp;
+                y_pos_nxt   = value_y_temp;
+
+
+                if (collision_bot) begin
                     value_y_nxt = value_y - REC_HEIGHT;
                     vel_time_nxt = 0;
                     bottom_reached = 1;
-                    y_jump_start_nxt = value_y_nxt; // Set new jump base
+                    y_jump_start_nxt = value_y_nxt; 
                 end else begin
-                    y_jump_start_nxt = y_pos; // Keep previous value
+                    y_jump_start_nxt = y_pos;
                 end
                 
-                counter_nxt = 0;
+            end else if (value_y >= VER_PIXELS - 5) begin
+                    if (level > 0) begin
+                        level_nxt = level - 1;
+                        value_y_nxt = 10;
+                        y_pos_nxt = value_y_nxt;
+                        fall_bottom_nxt = VER_PIXELS;
+                    end else begin
+                        fall_bottom_nxt = y_start;
+                end
             end else begin
                 counter_nxt = counter + 1;
-                y_jump_start_nxt = y_jump_start; // Keep previous value
+                y_jump_start_nxt = y_jump_start;
             end
             
-            if(counter_sd == CTR_MAX && value_x >= x_start) begin
+            if (counter_sd == CTR_MAX && value_x >= x_start) begin
                 counter_sd_nxt = 0;
-
-                if(facing_nxt) begin
-                    value_x_nxt = value_x + 3; // Move right
+                
+                if (facing_nxt) begin
+                    value_x_nxt = value_x + 3; 
                 end else begin
-                    value_x_nxt = value_x - 3; // Move left
+                    value_x_nxt = value_x - 3; 
                 end
-
             end else begin
                 counter_sd_nxt = counter_sd + 1;
             end
-
-
         end
-        
         
         LEFT: begin
             character_state_nxt = 2'b01;

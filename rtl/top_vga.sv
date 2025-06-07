@@ -70,7 +70,7 @@ module top_vga (
     wire key_left;
 
     wire [1:0] current_level;
-
+    wire [1:0] collision [0:3071];
     /**
      * Submodules instances
      */

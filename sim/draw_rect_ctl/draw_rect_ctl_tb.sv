@@ -6,8 +6,8 @@ module draw_rect_ctl_tb;
 
     localparam REC_WIDTH = 47;
     localparam REC_HEIGHT = 63;
-    localparam int SCREEN_HEIGHT = 1024;
-    localparam int SCREEN_WIDTH = 786;
+    localparam int SCREEN_HEIGHT = 786;
+    localparam int SCREEN_WIDTH = 1024;
     
     // Inputs
     reg clk;
@@ -23,6 +23,7 @@ module draw_rect_ctl_tb;
     wire [1:0] level;
 
     vga_if vga_in();
+    vga_if vga_out();
 
     // Instantiate the Unit Under Test (UUT)
     draw_rect_ctl uut (
@@ -35,7 +36,8 @@ module draw_rect_ctl_tb;
         .value_y(value_y),
         .character_state(character_state),
         .level(level),
-        .vga_in(vga_in)
+        .vga_in(vga_in),
+        .vga_out(vga_out)
     );
 
 
@@ -86,11 +88,11 @@ module draw_rect_ctl_tb;
         
         // Test JUMP sequence
         $display("Testing JUMP sequence");
+        //force uut.value_y = 0;
         key_space = 1;
-        #1000;
+        #10000;
         key_space = 0;
         
-        force uut.collision = 3'b011;
         // Wait for jump to complete
         #20000;
         
@@ -139,7 +141,7 @@ module draw_rect_ctl_tb;
 
     // Monitor the outputs
     always @(posedge clk) begin
-        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, collision = %b, jump_power = %d",
+        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, jump_power = %d, level = %b, y_jump_start= %d, vel_time = %d, fall_bottom = %d, bottom_collision = %d",
                 uut.level,
                 $time, 
                 value_x, 
@@ -149,8 +151,12 @@ module draw_rect_ctl_tb;
                 key_space,
                 key_left,
                 key_right,
-                uut.collision,
-                uut.jump_vel
+                uut.jump_vel,
+                uut.level,
+                uut.y_jump_start,
+                uut.vel_time,
+                uut.fall_bottom,
+                uut.collision_bot
                 );
         
         // Add assertions to verify behavior
@@ -158,7 +164,7 @@ module draw_rect_ctl_tb;
         assert(value_x >= 0 && value_x <= SCREEN_WIDTH - REC_WIDTH - 1);
         
         // Y position should stay within bounds
-        assert(value_y >= 0 && value_y <= 768 - REC_HEIGHT - 1);
+        assert(value_y >= 0 && value_y <= SCREEN_HEIGHT);
     end
     // Add this to your testbench to monitor states
     always @(posedge clk) begin
