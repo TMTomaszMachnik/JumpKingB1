@@ -39,7 +39,9 @@ localparam MAX_VELOCITY = 70;
 localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 localparam OFFSET = 12'd10;
-localparam MAX_LEVEL = 4; 
+localparam MAX_LEVEL = 4;
+localparam y_start = VER_PIXELS - REC_HEIGHT - 64; 
+localparam x_start = 12'd70; //12'd50;
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
@@ -59,10 +61,11 @@ logic facing;
 logic facing_nxt;
 logic [6:0] jump_vel;
 logic [6:0] jump_vel_nxt;
+logic stable;
 
 logic [5:0] fall_bottom;
 logic [5:0] fall_bottom_nxt;
-logic signed [15:0] value_y_temp;
+logic signed [11:0] value_y_temp;
 
 logic collision_left, collision_right, collision_bot, collision_top;
 logic collision_left_nxt, collision_right_nxt, collision_bot_nxt, collision_top_nxt;
@@ -85,22 +88,11 @@ typedef enum logic [2:0] {
 } character_skin_t;
 
 character_skin_t character_skin_nxt;
-
 state_t state, state_nxt;   
 
-
-
-// logic [6:0] tile_x;
-// logic [6:0] tile_x_l, tile_x_r;
-// logic [5:0] tile_y_l, tile_y_r,  tile_y_above;
-// logic [11:0] tile_idx_l, tile_idx_r,  tile_idx_above;
-// logic [1:0] tile_l_bottom, tile_r_bottom, tile_r, tile_l, tile_above;
 logic [11:0] y_jump_start, y_jump_start_nxt;
-logic [1:0] level_nxt;
-// localparam TILES_X = 64;  // 1024/16 rounded up                                                                     
-// localparam TILES_Y = 48;  // 
-localparam y_start = VER_PIXELS - REC_HEIGHT - 64; 
-localparam x_start = 12'd70; //12'd50;
+logic [2:0] level_nxt;
+
 
 
 //------------------------------------------------------------------------------
@@ -186,7 +178,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         character_skin <= MICRO_IDLE; 
         jump_vel <= VELOCITY; 
         counter_sd <= '0;
-        level <= 2'b00; // Default level
+        level <= '0;
         collision_left <= 1'b0;
         collision_right <= 1'b0;
         collision_bot <= 1'b1;
@@ -342,8 +334,6 @@ always_comb begin : out_comb_blk
                     value_y_nxt = value_y - 6;
                 end
             end
-            
-            
         end
 
         JUMP_PREP: begin
@@ -363,17 +353,8 @@ always_comb begin : out_comb_blk
             end
         end
 
-               JUMP: begin
+        JUMP: begin
             character_skin_nxt = MICRO_JUMP;
-        
-            if(collision_left) begin
-                facing_nxt = 1'b1;
-            end else if (collision_right) begin
-                facing_nxt = 1'b0; 
-            end else begin
-                facing_nxt = facing; 
-            end
-
 
             if(counter == 3*CTR_MAX && value_y > 5) begin
                 counter_nxt = 0;
@@ -399,10 +380,11 @@ always_comb begin : out_comb_blk
                         y_pos_nxt = value_y_nxt;
                         fall_bottom_nxt = VER_PIXELS;   
                         y_jump_start_nxt  = value_y_nxt; // ← THIS is critical!
+                        vel_time_nxt = vel_time;
                     end 
                 end else begin 
                 counter_nxt = counter + 1;
-                
+                vel_time_nxt = vel_time;
             end 
 
             // Horizontal movement during jump
@@ -421,15 +403,6 @@ always_comb begin : out_comb_blk
         
         FALLING: begin
             character_skin_nxt = MICRO_JUMP;
-            
- 
-            if (collision_left) begin
-                facing_nxt = 1'b1; 
-            end else if (collision_right) begin
-                facing_nxt = 1'b0; 
-            end else begin
-                facing_nxt = facing; 
-            end
 
             if (counter == 3 * CTR_MAX) begin
                 counter_nxt = 0;    
@@ -487,6 +460,7 @@ always_comb begin : out_comb_blk
 
         LEFT: begin
             character_skin_nxt = MICRO_LEFT;
+            vel_time_nxt = '0;
             if (collision_left) begin
                 value_x_nxt  = value_x;
                 counter_sd_nxt = counter_sd; 
@@ -501,7 +475,9 @@ always_comb begin : out_comb_blk
         end
 
         RIGHT: begin
+            counter_sd_nxt = 0;
             character_skin_nxt = MICRO_RIGHT;
+            vel_time_nxt = '0;
             if (collision_right) begin
                 value_x_nxt   = value_x;
                 counter_sd_nxt = counter_sd;
@@ -514,7 +490,6 @@ always_comb begin : out_comb_blk
                 counter_sd_nxt = counter_sd + 1;
             end
         end
-
 
         default: begin
         end

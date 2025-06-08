@@ -32,17 +32,17 @@ always_comb begin
                  key_left = 1'b0;
         end
         else begin
-            if(keycode[7:0] === 8'h29) begin
+            if(keycode[7:0] == 8'h29) begin
                 key_space = 1'b1; 
             end else begin
                 key_space= 1'b0; 
             end
-            if(keycode[7:0] === 8'h23) begin
+            if(keycode[7:0] == 8'h23) begin
                 key_right = 1'b1; 
             end else begin
                 key_right = 1'b0; 
             end
-            if(keycode[7:0] === 8'h1C) begin
+            if(keycode[7:0] == 8'h1C) begin
                 key_left = 1'b1; 
             end else begin
                 key_left = 1'b0; 

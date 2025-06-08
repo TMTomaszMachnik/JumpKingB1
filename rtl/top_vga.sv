@@ -23,11 +23,11 @@ module top_vga (
         output logic [3:0] b,
 
         input  ps2_clk,
-        input  ps2_data,
+        input  ps2_data
 
-        input wire bleft,
-        input wire bright,
-        input wire space
+        // input wire bleft,
+        // input wire bright,
+        // input wire space
     );
 
     timeunit 1ns;
@@ -69,7 +69,7 @@ module top_vga (
     wire key_right;
     wire key_left;
 
-    wire [1:0] current_level;
+    wire [2:0] current_level;
     wire [1:0] collision [0:3071];
     /**
      * Submodules instances

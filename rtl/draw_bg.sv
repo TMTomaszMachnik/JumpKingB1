@@ -2,7 +2,7 @@
 module draw_bg (
     input logic clk,
     input logic rst,
-    input logic [1:0] level,
+    input logic [2:0] level,
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -33,7 +33,8 @@ module draw_bg (
     // logic [11:0] bg2 [0:MEM_SIZE-1];
     // logic [11:0] bg3 [0:MEM_SIZE-1];
 
-
+    logic [11:0] dummy_rgb;
+    assign dummy_rgb = vga_in.rgb;
 
     // VGA signals
     always_ff @(posedge clk) begin : bg_ff_blk
