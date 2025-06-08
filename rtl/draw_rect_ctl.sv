@@ -30,7 +30,7 @@ import vga_pkg::*;
 // local parameters
 //------------------------------------------------------------------------------
 localparam CLK_FREQ = 100_000_000;
-localparam CTR_FREQ = 100_000_00;
+localparam CTR_FREQ = 100;
 localparam CTR_MAX = (CLK_FREQ / CTR_FREQ) - 1;
 localparam DIV = 10;
 localparam A = 4; 
@@ -180,7 +180,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         level <= 2'b00; // Default level
         collision_left <= 1'b0;
         collision_right <= 1'b0;
-        collision_bot <= 1'b0;
+        collision_bot <= 1'b1;
         collision_top <= 1'b0;
         fall_bottom <= y_start;
     end
@@ -268,13 +268,13 @@ always_comb begin : out_comb_blk
     jump_vel_nxt = jump_vel;
     counter_sd_nxt = counter_sd;
     facing_nxt = facing;
-    level_nxt = 2'b00; // Default level
+    level_nxt = level;
     fall_bottom_nxt = fall_bottom;
 
     collision_left_nxt = collision_left;
     collision_right_nxt = collision_right;
-    collision_bot_nxt = '0;
-    collision_top_nxt = '0;
+    collision_bot_nxt = collision_bot;
+    collision_top_nxt = collision_top;
 
     if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
         if(vga_in.rgb == 12'h2_B_4) begin
@@ -294,11 +294,15 @@ always_comb begin : out_comb_blk
     if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT + 5)) begin // bot whole
         if(vga_in.rgb == 12'h2_B_4) begin
             collision_bot_nxt = '1;
+        end else begin
+            collision_bot_nxt = '0;
         end 
     end 
     if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
         if(vga_in.rgb == 12'h2_B_4) begin
             collision_top_nxt = '1;
+        end else begin
+            collision_top_nxt = '0;
         end
     end
 
