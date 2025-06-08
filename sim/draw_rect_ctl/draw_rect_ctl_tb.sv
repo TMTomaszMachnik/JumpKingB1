@@ -86,21 +86,21 @@ module draw_rect_ctl_tb;
         $display("Testing IDLE state");
         #100;
         
-        // // Test JUMP sequence
-        // $display("Testing JUMP sequence");
-        // //force uut.value_y = 0;
-        // key_space = 1;
-        // #10000;
-        // key_space = 0;
+        // Test JUMP sequence
+        $display("Testing JUMP sequence");
+        //force uut.value_y = 0;
+        key_space = 1;
+        #10000;
+        key_space = 0;
         
-        // // Wait for jump to complete
-        // #20000;
+        // Wait for jump to complete
+        #20000;
         
 
                // Test RIGHT movement
         $display("Testing RIGHT movement");
         key_right = 1;
-        #1000000;
+        #1000;
         key_right = 0;
         
         // Test collision with right boundary

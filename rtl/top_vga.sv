@@ -63,7 +63,7 @@ module top_vga (
     wire [15:0] keyboard_data;
     wire f_EOT;
 
-    wire [1:0] char_state;
+    wire [2:0] character_skin;
 
     wire key_space;
     wire key_right;
@@ -75,15 +75,15 @@ module top_vga (
      * Submodules instances
      */
 
-    // keyboard_ctl u_keyboard_ctl (
-    //     .clk(clk100),
-    //     .rst(rst),
-    //     .ps2_clk(ps2_clk),
-    //     .ps2_data(ps2_data),
-    //     .key_space(key_space),
-    //     .key_right(key_right),
-    //     .key_left(key_left)
-    // );
+    keyboard_ctl u_keyboard_ctl (
+        .clk(clk100),
+        .rst(rst),
+        .ps2_clk(ps2_clk),
+        .ps2_data(ps2_data),
+        .key_space(key_space),
+        .key_right(key_right),
+        .key_left(key_left)
+    );
 
 
     vga_timing u_vga_timing (
@@ -108,12 +108,12 @@ module top_vga (
     draw_rect_ctl u_draw_rect_ctl(
         .clk(clk100),
         .rst(rst),
-        .key_space(space),
-        .key_right(bright),
-        .key_left(bleft),
+        .key_space(key_space),
+        .key_right(key_right),
+        .key_left(key_left),
         .value_x(x_pos),
         .value_y(y_pos),
-        .character_state(char_state),
+        .character_skin(character_skin),
         .level(current_level),
         .vga_in(vga_if_bg_ctl.in),
         .vga_out(vga_if_ctl_r.out)
@@ -134,7 +134,7 @@ module top_vga (
         .clk,
         .rgb(rgb_pixel),
         .address(address),
-        .character_state(char_state)
+        .character_skin(character_skin)
     );
 
     // draw_rect_ctl u_draw_rect_ctl(

@@ -66,4 +66,6 @@ set mem_files {
   ../rtl/Graphics/bg1.data
   ../rtl/Graphics/micro_curled.data
   ../rtl/Graphics/micro_jump.data
+  ../rtl/Graphics/micro_left.data
+  ../rtl/Graphics/micro_right.data
 }

@@ -87,7 +87,7 @@ always_comb begin : bg_comb_blk
         pixel_addr = (vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1) + 
                     (hcount_buf[C_DELAY_LEN-1] - x_value);
         
-        if (rgb_pixel != 12'hF_F_F) begin
+        if (rgb_pixel != 12'hF_A_C) begin
             rgb_nxt = rgb_pixel;
         end
     end

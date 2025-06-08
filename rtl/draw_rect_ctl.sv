@@ -16,8 +16,8 @@
     input logic key_left,
     output logic [11:0] value_x,
     output logic [11:0] value_y,
-    output logic [1:0] character_state,
-    output logic [1:0] level,
+    output logic [2:0] character_skin,
+    output logic [2:0] level,
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -53,7 +53,6 @@ logic [11:0] value_x_nxt;
 logic [11:0] value_y_nxt;
 logic top_reached;
 logic bottom_reached;
-logic [1:0] character_state_nxt;
 logic [11:0] y_pos; 
 logic [11:0] y_pos_nxt;
 logic facing;
@@ -77,6 +76,16 @@ typedef enum logic [2:0] {
     JUMP_PREP = 3'b101
 } state_t;
 
+typedef enum logic [2:0] {
+    MICRO_IDLE = 3'b000,
+    MICRO_PREP = 3'b001,
+    MICRO_JUMP   = 3'b010,
+    MICRO_LEFT   = 3'b011,
+    MICRO_RIGHT  = 3'b100
+} character_skin_t;
+
+character_skin_t character_skin_nxt;
+
 state_t state, state_nxt;   
 
 
@@ -90,7 +99,7 @@ logic [11:0] y_jump_start, y_jump_start_nxt;
 logic [1:0] level_nxt;
 // localparam TILES_X = 64;  // 1024/16 rounded up                                                                     
 // localparam TILES_Y = 48;  // 
-localparam y_start = VER_PIXELS - REC_HEIGHT - 62; //  VER_PIXELS - REC_HEIGHT - 50;
+localparam y_start = VER_PIXELS - REC_HEIGHT - 64; 
 localparam x_start = 12'd70; //12'd50;
 
 
@@ -174,7 +183,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         value_x <= x_start;
         value_y <= y_start;
         y_pos <= y_start;
-        character_state <= 2'b00;
+        character_skin <= MICRO_IDLE; 
         jump_vel <= VELOCITY; 
         counter_sd <= '0;
         level <= 2'b00; // Default level
@@ -189,7 +198,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         counter <= counter_nxt;
         value_x <= value_x_nxt;
         value_y <= value_y_nxt;
-        character_state <= character_state_nxt;
+        character_skin <= character_skin_nxt;
         y_pos <= y_pos_nxt;
         jump_vel <= jump_vel_nxt;
         counter_sd <= counter_sd_nxt;
@@ -261,7 +270,7 @@ always_comb begin : out_comb_blk
     y_pos_nxt = value_y;
     counter_nxt = counter;
     vel_time_nxt = vel_time;
-    character_state_nxt = character_state;
+    character_skin_nxt = character_skin_t'(character_skin);
     top_reached = 1'b0;
     bottom_reached = 1'b0;
     y_jump_start_nxt = y_jump_start;
@@ -323,7 +332,7 @@ always_comb begin : out_comb_blk
             counter_nxt = '0;
             counter_sd_nxt = '0;
             vel_time_nxt = vel_time;
-            character_state_nxt = 2'b00;
+            character_skin_nxt = MICRO_IDLE;
             top_reached = 1'b0;
             bottom_reached = 1'b0;
             jump_vel_nxt = VELOCITY;
@@ -338,7 +347,7 @@ always_comb begin : out_comb_blk
         end
 
         JUMP_PREP: begin
-            character_state_nxt = 2'b01;
+            character_skin_nxt = MICRO_PREP;
             if(key_space) begin
                 vel_time_nxt = '0;
                 y_jump_start_nxt = value_y;
@@ -355,7 +364,7 @@ always_comb begin : out_comb_blk
         end
 
                JUMP: begin
-            character_state_nxt = 2'b01;
+            character_skin_nxt = MICRO_JUMP;
         
             if(collision_left) begin
                 facing_nxt = 1'b1;
@@ -411,7 +420,7 @@ always_comb begin : out_comb_blk
         end
         
         FALLING: begin
-            character_state_nxt = 2'b10;
+            character_skin_nxt = MICRO_JUMP;
             
  
             if (collision_left) begin
@@ -475,39 +484,32 @@ always_comb begin : out_comb_blk
             end
         end
         
-            // … inside your always_comb out_comb_blk, replace the LEFT/RIGHT cases with:
 
         LEFT: begin
-            character_state_nxt = 2'b01;
-            // if wall on left edge, hold position and timer
+            character_skin_nxt = MICRO_LEFT;
             if (collision_left) begin
                 value_x_nxt  = value_x;
                 counter_sd_nxt = counter_sd; 
             end
-            // otherwise, every CTR_MAX ticks take a 3-pixel step left
             else if (counter_sd == CTR_MAX) begin
                 counter_sd_nxt = 0;
                 value_x_nxt  = value_x - 3;
             end
-            // else just advance the step timer
             else begin
                 counter_sd_nxt = counter_sd + 1;
             end
         end
 
         RIGHT: begin
-            character_state_nxt = 2'b01;
-            // if wall on right edge, hold position and timer
+            character_skin_nxt = MICRO_RIGHT;
             if (collision_right) begin
                 value_x_nxt   = value_x;
                 counter_sd_nxt = counter_sd;
             end
-            // otherwise, every CTR_MAX ticks take a 3-pixel step right
             else if (counter_sd == CTR_MAX) begin
                 counter_sd_nxt = 0;
                 value_x_nxt  = value_x + 3;
             end
-            // else just advance the step timer
             else begin
                 counter_sd_nxt = counter_sd + 1;
             end
