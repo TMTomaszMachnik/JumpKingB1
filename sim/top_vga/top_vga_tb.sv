@@ -92,11 +92,16 @@ module top_vga_tb;
     /**
      * Main test
      */
+    // always @(posedge clk) begin
+    //     $display("dut.r = %h, dut.g = %h, dut.b = %h", r, g, b);
+    // end
 
     initial begin
         rst = 1'b0;
         # 30 rst = 1'b1;
         # 30 rst = 1'b0;
+
+
 
         // force dut.u_draw_rect.x_value = 12'd328;
         // force dut.u_draw_rect.y_value = 12'd70; 

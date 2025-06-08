@@ -30,7 +30,7 @@ import vga_pkg::*;
 // local parameters
 //------------------------------------------------------------------------------
 localparam CLK_FREQ = 100_000_000;
-localparam CTR_FREQ = 100;//100_000_00;
+localparam CTR_FREQ = 100_000_00;
 localparam CTR_MAX = (CLK_FREQ / CTR_FREQ) - 1;
 localparam DIV = 10;
 localparam A = 4; 
@@ -39,7 +39,7 @@ localparam MAX_VELOCITY = 70;
 localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 localparam OFFSET = 12'd10;
-localparam MAX_LEVEL = 4;
+localparam MAX_LEVEL = 4; 
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
@@ -61,7 +61,9 @@ logic facing_nxt;
 logic [6:0] jump_vel;
 logic [6:0] jump_vel_nxt;
 
-logic signed [15:0] value_y_temp; 
+logic [5:0] fall_bottom;
+logic [5:0] fall_bottom_nxt;
+logic signed [15:0] value_y_temp;
 
 logic collision_left, collision_right, collision_bot, collision_top;
 logic collision_left_nxt, collision_right_nxt, collision_bot_nxt, collision_top_nxt;
@@ -79,14 +81,18 @@ state_t state, state_nxt;
 
 
 
+// logic [6:0] tile_x;
+// logic [6:0] tile_x_l, tile_x_r;
+// logic [5:0] tile_y_l, tile_y_r,  tile_y_above;
+// logic [11:0] tile_idx_l, tile_idx_r,  tile_idx_above;
+// logic [1:0] tile_l_bottom, tile_r_bottom, tile_r, tile_l, tile_above;
 logic [11:0] y_jump_start, y_jump_start_nxt;
 logic [1:0] level_nxt;
 // localparam TILES_X = 64;  // 1024/16 rounded up                                                                     
 // localparam TILES_Y = 48;  // 
-localparam y_start = VER_PIXELS - REC_HEIGHT - 64;
-localparam x_start = 12'd64; //12'd50;
-logic [5:0] fall_bottom;
-logic [5:0] fall_bottom_nxt;
+localparam y_start = VER_PIXELS - REC_HEIGHT - 62; //  VER_PIXELS - REC_HEIGHT - 50;
+localparam x_start = 12'd70; //12'd50;
+
 
 //------------------------------------------------------------------------------
 // state sequential with synchronous reset
@@ -104,7 +110,8 @@ end
 //------------------------------------------------------------------------------
 always_comb begin : state_comb_blk
     state_nxt = state;
-    case(state)
+
+    case (state)
         IDLE: begin
             if (key_space) begin
                 state_nxt = JUMP_PREP;
@@ -112,46 +119,51 @@ always_comb begin : state_comb_blk
                 state_nxt = RIGHT;
             end else if (key_left) begin
                 state_nxt = LEFT;
-            end 
+            end
+        end
+
+        JUMP_PREP: begin
+            if (!key_space) begin
+                state_nxt = JUMP;
+            end
         end
 
         JUMP: begin
-            if(top_reached || (collision_top)) begin
+            if (top_reached || collision_top) begin
                 state_nxt = FALLING;
             end
         end
 
-        FALLING: begin
-            if(collision_bot) begin 
-                state_nxt = IDLE;
-            end
-        end
-
         LEFT: begin
+           if(!collision_bot) begin
+                state_nxt = FALLING;
+            end else
             if (!key_left) begin
                 state_nxt = IDLE;
+            end else begin
+                state_nxt = LEFT;
             end
-            // end else if (!collision_bot) begin
-            //     state_nxt = FALLING;
-            // end
         end
-        
+
         RIGHT: begin
+            if(!collision_bot) begin
+                state_nxt = FALLING;
+            end else 
             if (!key_right) begin
                 state_nxt = IDLE;
+            end else begin
+                state_nxt = RIGHT;
             end
-
-            // else if (!collision_bot) begin
-            //     state_nxt = FALLING;
-            // end
         end
-        JUMP_PREP: begin
-            if(!key_space) begin
-                state_nxt = JUMP;
+
+        FALLING: begin
+            if (collision_bot) begin 
+                state_nxt = IDLE;
             end
         end
     endcase
 end
+
 //------------------------------------------------------------------------------
 // output register
 //------------------------------------------------------------------------------
@@ -241,37 +253,6 @@ end
 // output logic
 //------------------------------------------------------------------------------
 
-always_comb begin
-
-    collision_left_nxt = '0;
-    collision_right_nxt = '0;
-    collision_bot_nxt = '0;
-    collision_top_nxt = '0;
-
-    if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_left_nxt = '1;
-        end 
-    end 
-    if(vga_in.hcount == (value_x + REC_WIDTH - 1) && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // right
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_right_nxt = '1;
-        end 
-    end
-    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 1)) begin // bot whole
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_bot_nxt = '1;
-        end
-    end 
-    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
-        if(vga_in.rgb == 12'h2_B_4) begin
-            collision_top_nxt = '1;
-        end 
-    end
-end
-
-
-
 
 always_comb begin : out_comb_blk
     // Default assignments
@@ -287,8 +268,47 @@ always_comb begin : out_comb_blk
     jump_vel_nxt = jump_vel;
     counter_sd_nxt = counter_sd;
     facing_nxt = facing;
-    level_nxt = level; // Default level
+    level_nxt = 2'b00; // Default level
     fall_bottom_nxt = fall_bottom;
+
+    collision_left_nxt = collision_left;
+    collision_right_nxt = collision_right;
+    collision_bot_nxt = '0;
+    collision_top_nxt = '0;
+
+    if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_left_nxt = '1;
+        end else begin
+            collision_left_nxt = '0;
+        end
+
+    end 
+    if(vga_in.hcount == (value_x + REC_WIDTH - 1) && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // right
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_right_nxt = '1;
+        end else begin
+            collision_right_nxt = '0;
+        end 
+    end
+    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT + 5)) begin // bot whole
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_bot_nxt = '1;
+        end 
+    end 
+    if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
+        if(vga_in.rgb == 12'h2_B_4) begin
+            collision_top_nxt = '1;
+        end
+    end
+
+    if(collision_left) begin
+        facing_nxt = 1'b1; // Facing left
+    end else if (collision_right) begin
+        facing_nxt = 1'b0; // Facing right
+    end else begin
+        facing_nxt = facing; // Keep previous value
+    end
 
     case(state)
         IDLE: begin
@@ -308,7 +328,9 @@ always_comb begin : out_comb_blk
                 if(vga_in.rgb == 12'h2_B_4) begin
                     value_y_nxt = value_y - 6;
                 end
-            end 
+            end
+            
+            
         end
 
         JUMP_PREP: begin
@@ -328,7 +350,7 @@ always_comb begin : out_comb_blk
             end
         end
 
-        JUMP: begin
+               JUMP: begin
             character_state_nxt = 2'b01;
         
             if(collision_left) begin
@@ -371,7 +393,7 @@ always_comb begin : out_comb_blk
             end 
 
             // Horizontal movement during jump
-            if(counter_sd == CTR_MAX && value_x >= x_start) begin
+            if(counter_sd == CTR_MAX && value_x >= x_start && value_x <= HOR_PIXELS - REC_WIDTH - 1) begin
                 counter_sd_nxt = 0;
 
                 if(facing_nxt) begin
@@ -396,7 +418,7 @@ always_comb begin : out_comb_blk
                 facing_nxt = facing; 
             end
 
-            if (counter == 3 * CTR_MAX && value_y <= VER_PIXELS) begin
+            if (counter == 3 * CTR_MAX) begin
                 counter_nxt = 0;    
                 vel_time_nxt = vel_time + 1;
                 // value_y_nxt = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
@@ -449,27 +471,44 @@ always_comb begin : out_comb_blk
             end
         end
         
+            // … inside your always_comb out_comb_blk, replace the LEFT/RIGHT cases with:
+
         LEFT: begin
             character_state_nxt = 2'b01;
-            if (value_x <= x_start || (collision_left)) begin
-            end else if (vel_time >= (CTR_MAX * 4)) begin
-                value_x_nxt = value_x - 16;
-                vel_time_nxt = 0;
-            end else begin
-                vel_time_nxt = vel_time + 1;
+            // if wall on left edge, hold position and timer
+            if (collision_left) begin
+                value_x_nxt  = value_x;
+                counter_sd_nxt = counter_sd; 
+            end
+            // otherwise, every CTR_MAX ticks take a 3-pixel step left
+            else if (counter_sd == CTR_MAX) begin
+                counter_sd_nxt = 0;
+                value_x_nxt  = value_x - 3;
+            end
+            // else just advance the step timer
+            else begin
+                counter_sd_nxt = counter_sd + 1;
             end
         end
 
         RIGHT: begin
             character_state_nxt = 2'b01;
-            if (value_x >= HOR_PIXELS - REC_WIDTH - 1 ||  (collision_right)) begin
-            end else if (vel_time >= (CTR_MAX * 4)) begin
-                value_x_nxt = value_x + 16;
-                vel_time_nxt = 0;
-            end else begin
-                vel_time_nxt = vel_time + 1;
+            // if wall on right edge, hold position and timer
+            if (collision_right) begin
+                value_x_nxt   = value_x;
+                counter_sd_nxt = counter_sd;
+            end
+            // otherwise, every CTR_MAX ticks take a 3-pixel step right
+            else if (counter_sd == CTR_MAX) begin
+                counter_sd_nxt = 0;
+                value_x_nxt  = value_x + 3;
+            end
+            // else just advance the step timer
+            else begin
+                counter_sd_nxt = counter_sd + 1;
             end
         end
+
 
         default: begin
         end

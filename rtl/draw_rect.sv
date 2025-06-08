@@ -76,14 +76,20 @@ always_ff @(posedge clk) begin : rec_ff_blk
 end
 
 always_comb begin : bg_comb_blk
-    if(((vcount_buf[C_DELAY_LEN-1] <= (y_value + REC_HEIGHT)) && vcount_buf[C_DELAY_LEN-1] >= (y_value)) &&
-    (hcount_buf[C_DELAY_LEN-1] >= (x_value) && hcount_buf[C_DELAY_LEN-1] <= (x_value + REC_WIDTH))) begin
-        rgb_nxt = rgb_pixel;
-        pixel_addr = ((vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1)) + (hcount_buf[C_DELAY_LEN-1] - x_value);
-    end
-    else begin
-        rgb_nxt = rgb_buf[C_DELAY_LEN-1];
-        pixel_addr = '0;
+    rgb_nxt = rgb_buf[C_DELAY_LEN-1];
+    pixel_addr = '0;
+
+    if ((vcount_buf[C_DELAY_LEN-1] >= y_value) && 
+        (vcount_buf[C_DELAY_LEN-1] < (y_value + REC_HEIGHT)) &&
+        (hcount_buf[C_DELAY_LEN-1] >= x_value) && 
+        (hcount_buf[C_DELAY_LEN-1] < (x_value + REC_WIDTH))) begin
+        
+        pixel_addr = (vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1) + 
+                    (hcount_buf[C_DELAY_LEN-1] - x_value);
+        
+        if (rgb_pixel != 12'hF_F_F) begin
+            rgb_nxt = rgb_pixel;
+        end
     end
 end
 

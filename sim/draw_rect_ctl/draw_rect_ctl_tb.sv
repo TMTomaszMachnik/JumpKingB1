@@ -86,21 +86,21 @@ module draw_rect_ctl_tb;
         $display("Testing IDLE state");
         #100;
         
-        // Test JUMP sequence
-        $display("Testing JUMP sequence");
-        //force uut.value_y = 0;
-        key_space = 1;
-        #10000;
-        key_space = 0;
+        // // Test JUMP sequence
+        // $display("Testing JUMP sequence");
+        // //force uut.value_y = 0;
+        // key_space = 1;
+        // #10000;
+        // key_space = 0;
         
-        // Wait for jump to complete
-        #20000;
+        // // Wait for jump to complete
+        // #20000;
         
 
                // Test RIGHT movement
         $display("Testing RIGHT movement");
         key_right = 1;
-        #1000;
+        #1000000;
         key_right = 0;
         
         // Test collision with right boundary
@@ -141,7 +141,7 @@ module draw_rect_ctl_tb;
 
     // Monitor the outputs
     always @(posedge clk) begin
-        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, jump_power = %d, level = %b, y_jump_start= %d, vel_time = %d, fall_bottom = %d, bottom_collision = %d",
+        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, jump_power = %d, level = %b, y_jump_start= %d, vel_time = %d, fall_bottom = %d, bottom_collision = %d , right_collision = %d",
                 uut.level,
                 $time, 
                 value_x, 
@@ -156,7 +156,8 @@ module draw_rect_ctl_tb;
                 uut.y_jump_start,
                 uut.vel_time,
                 uut.fall_bottom,
-                uut.collision_bot
+                uut.collision_bot,
+                uut.collision_right
                 );
         
         // Add assertions to verify behavior
