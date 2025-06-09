@@ -19,25 +19,28 @@ module uart_ctl (
     logic [7:0] w_data;
     logic       rx_empty, tx_full;
     logic       rd_uart, wr_uart;
+    logic tx_nxt;
+    logic [7:0] data_out_nxt;
 
     logic tx_uart;
 
     /**
      * Signals assignments
      */
-
-     assign rd_uart = !rx_empty;
-
      always_ff @(posedge clk) begin
         if (rst) begin
             tx <= '0;
             data_out <= '0;
 
         end else begin
-            tx <= tx_uart;
-            data_out <= r_data;
+            tx <= tx_nxt;
+            data_out <= data_out_nxt;
         end
      end
+
+     assign rd_uart = !rx_empty;
+     assign tx_nxt = tx_uart;
+     assign data_out_nxt = r_data;
 
     /**
      * Submodules instances
@@ -61,6 +64,7 @@ module uart_ctl (
     data_tx data_tx_inst (
         .clk(clk),
         .rst(rst),
+        .tx_full(tx_full),
         .data_in(data_in),
         .w_data(w_data),
         .wr_uart(wr_uart)
