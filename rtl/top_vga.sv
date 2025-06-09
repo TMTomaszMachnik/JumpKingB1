@@ -22,6 +22,13 @@ module top_vga (
         output logic [3:0] g,
         output logic [3:0] b,
 
+        input logic rx1,
+        output logic tx1,
+        input logic rx2,
+        output logic tx2,
+        input logic rx3,
+        output logic tx3,
+
         input  ps2_clk,
         input  ps2_data
 
@@ -34,9 +41,10 @@ module top_vga (
     timeprecision 1ps;
 
     vga_if vga_if_t_bg();
+    vga_if vga_if_bg_uart();
+    vga_if vga_if_uart_ctl();
     vga_if vga_if_ctl_r();
     vga_if vga_if_r_out();
-    vga_if vga_if_bg_ctl();
 
 
     /**
@@ -69,7 +77,7 @@ module top_vga (
     wire key_right;
     wire key_left;
 
-    wire [2:0] current_level;
+    wire [1:0] current_level;
     wire [1:0] collision [0:3071];
     /**
      * Submodules instances
@@ -102,9 +110,36 @@ module top_vga (
         .rst,
         .level(current_level),
         .vga_in(vga_if_t_bg.in),
-        .vga_out(vga_if_bg_ctl.out)
+        .vga_out(vga_if_bg_uart.out)
     );
-    
+
+    wire [7:0] data_1, data_2, data_3;
+    wire [11:0] rgb_pixel_uart;
+    wire [11:0] address_uart; 
+
+    wire dummy_uart;
+    assign dummy_uart = 0;
+
+    draw_char_uart u_draw_char_uart(
+        .clk,
+        .rst,
+        .level_home(current_level),
+        .level_remote(data_3[7:6]),
+        .vga_in(vga_if_bg_uart.in),
+        .vga_out(vga_if_uart_ctl.out),
+        .pixel_addr(address_uart),
+        .rgb_pixel(rgb_pixel_uart),
+        .x_value({dummy_uart,data_2[2:0],data_1}),
+        .y_value({dummy_uart,data_3[5:0],data_2[7:3]})
+    );
+
+    image_rom u_image_rom_uart(
+        .clk,
+        .rgb(rgb_pixel_uart),
+        .address(address_uart),
+        .character_skin('0)
+    );
+
     draw_rect_ctl u_draw_rect_ctl(
         .clk(clk100),
         .rst(rst),
@@ -115,8 +150,35 @@ module top_vga (
         .value_y(y_pos),
         .character_skin(character_skin),
         .level(current_level),
-        .vga_in(vga_if_bg_ctl.in),
+        .vga_in(vga_if_uart_ctl.in),
         .vga_out(vga_if_ctl_r.out)
+    );
+
+    uart_ctl uart_1(
+        .clk(clk100),
+        .rst(rst),
+        .data_in(x_pos[7:0]),
+        .data_out(data_1),
+        .rx(rx1),
+        .tx(tx1)
+    );
+
+    uart_ctl uart_2(
+        .clk(clk100),
+        .rst(rst),
+        .data_in({y_pos[4:0],x_pos[10:8]}),
+        .data_out(data_2),
+        .rx(rx2),
+        .tx(tx2)
+    );
+
+    uart_ctl uart_3(
+        .clk(clk100),
+        .rst(rst),
+        .data_in({current_level,y_pos[10:5]}),
+        .data_out(data_3),
+        .rx(rx3),
+        .tx(tx3)
     );
 
     draw_rect u_draw_rect (
@@ -129,6 +191,7 @@ module top_vga (
         .x_value(x_pos),
         .y_value(y_pos)
     );
+
 
     image_rom u_image_rom(
         .clk,

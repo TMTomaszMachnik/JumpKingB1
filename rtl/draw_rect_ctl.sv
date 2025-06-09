@@ -17,7 +17,7 @@
     output logic [11:0] value_x,
     output logic [11:0] value_y,
     output logic [2:0] character_skin,
-    output logic [2:0] level,
+    output logic [1:0] level,
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -91,7 +91,7 @@ character_skin_t character_skin_nxt;
 state_t state, state_nxt;   
 
 logic [11:0] y_jump_start, y_jump_start_nxt;
-logic [2:0] level_nxt;
+logic [1:0] level_nxt;
 
 
 

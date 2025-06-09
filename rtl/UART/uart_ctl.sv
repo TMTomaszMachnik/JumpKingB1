@@ -1,10 +1,11 @@
 module uart_ctl (
         input  logic           clk,
         input  logic           rst,
-        input  logic [7:0] data_tx,
-        output logic [7:0] data_rx,
-        output logic            rx,
+        input  logic [7:0] data_in,
+        input logic             rx,
+
         output logic            tx,
+        output logic [7:0] data_out
     );
 
     timeunit 1ns;
@@ -21,25 +22,20 @@ module uart_ctl (
 
     logic tx_uart;
 
-    logic db_level, db_tick;
-
-    logic [0:3] hex0, hex1, hex2, hex3;
-
-
     /**
      * Signals assignments
      */
-
 
      assign rd_uart = !rx_empty;
 
      always_ff @(posedge clk) begin
         if (rst) begin
-            rx_monitor <= 1'b0;
-            tx_monitor <= 1'b0;
+            tx <= '0;
+            data_out <= '0;
+
         end else begin
-            rx_monitor <= RsRx;
-            tx_monitor <= RsTx;
+            tx <= tx_uart;
+            data_out <= r_data;
         end
      end
 
@@ -52,7 +48,7 @@ module uart_ctl (
     ) uart_inst (
         .clk(clk),
         .reset(rst),
-        .rx(RsRx),
+        .rx(rx),
         .tx(tx_uart),
         .rx_empty(rx_empty),
         .tx_full(tx_full),
@@ -65,9 +61,7 @@ module uart_ctl (
     data_tx data_tx_inst (
         .clk(clk),
         .rst(rst),
-        .db_tick(db_tick),
-        .hex1_data(hex1),
-        .hex0_data(hex0),
+        .data_in(data_in),
         .w_data(w_data),
         .wr_uart(wr_uart)
     );

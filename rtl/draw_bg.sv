@@ -2,7 +2,7 @@
 module draw_bg (
     input logic clk,
     input logic rst,
-    input logic [2:0] level,
+    input logic [1:0] level,
     vga_if.in vga_in,
     vga_if.out vga_out
 );

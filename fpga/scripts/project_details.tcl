@@ -36,12 +36,15 @@ set sv_files {
     ../rtl/vga_timing.sv
     ../rtl/draw_bg.sv
     ../rtl/draw_rect.sv
+    ../rtl/draw_char_uart.sv
     ../rtl/vga_if.sv
     ../rtl/draw_rect_ctl.sv  
     ../rtl/keyboard_ctl.sv
     ../rtl/top_vga.sv
     ../rtl/rom_files/image_rom.sv
     rtl/top_vga_basys3.sv
+    ../rtl/UART/data_tx.sv
+    ../rtl/UART/uart_ctl.sv
 }
 
 # Specify Verilog design files location         -- EDIT
@@ -50,6 +53,12 @@ set verilog_files {
     ../fpga/rtl/clk_wiz_0_clk_wiz.v
     ../rtl/PS2Receiver.v
     ../rtl/debouncer.v
+    ../rtl/UART/fifo.v
+    ../rtl/UART/flag_buf.v
+    ../rtl/UART/mod_m_counter.v
+    ../rtl/UART/uart_rx.v
+    ../rtl/UART/uart_tx.v
+    ../rtl/UART/uart.v
 }
 
 # Specify VHDL design files location            -- EDIT
