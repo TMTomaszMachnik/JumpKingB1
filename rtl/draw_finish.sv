@@ -1,10 +1,13 @@
 
-module draw_bg (
+module draw_finish (
     input logic clk,
     input logic rst,
     input logic [1:0] level,
     vga_if.in vga_in,
-    vga_if.out vga_out
+    vga_if.out vga_out,
+    input logic [11:0] x_value,
+    input logic [11:0] y_value,
+    input logic sync_signal
 );
 
     timeunit 1ns;
@@ -20,20 +23,16 @@ module draw_bg (
     logic [11:0] rgb_nxt;
 
 
-    typedef enum logic [1:0] {
-        LEVEL_0 = 2'd0,
-        LEVEL_1 = 2'd1,
-        LEVEL_2 = 2'd2,
-        LEVEL_3 = 2'd3
-    } level_t;  
+    typedef enum logic{
+        START = 0,
+        FINISH = 1
+    } game_state_t;
 
     // Background and collision map arrays
-    logic [11:0] bg0 [0:MEM_SIZE-1];
-    logic [11:0] bg1 [0:MEM_SIZE-1];
-    logic [11:0] bg2 [0:MEM_SIZE-1];
-    logic [11:0] bg3 [0:MEM_SIZE-1];
-
-
+    logic [11:0] map_start [0:MEM_SIZE-1];
+    logic [11:0] map_finish [0:MEM_SIZE-1];
+    logic finish;
+    logic finish_nxt;
     // VGA signals
     always_ff @(posedge clk) begin : bg_ff_blk
         if (rst) begin
@@ -44,6 +43,7 @@ module draw_bg (
             vga_out.hsync  <= '0;
             vga_out.hblnk  <= '0;
             vga_out.rgb    <= '0;
+            finish         <= '0;
         end else begin
             vga_out.vcount <= vga_in.vcount;
             vga_out.vsync  <= vga_in.vsync;
@@ -52,14 +52,13 @@ module draw_bg (
             vga_out.hsync  <= vga_in.hsync;
             vga_out.hblnk  <= vga_in.hblnk;
             vga_out.rgb    <= rgb_nxt;
+            finish         <= finish_nxt;
         end
     end
 
     initial begin
-        $readmemh("../../rtl/Graphics/bg0.data", bg0);
-        $readmemh("../../rtl/Graphics/bg1.data", bg1);
-        $readmemh("../../rtl/Graphics/bg2.data", bg2);
-        $readmemh("../../rtl/Graphics/bg3.data", bg3);
+        $readmemh("../../rtl/Graphics/map_start.data", map_start);
+        $readmemh("../../rtl/Graphics/map_finish.data", map_finish);
     end
 
     logic [11:0] scaled_hcount, scaled_vcount;
@@ -72,28 +71,22 @@ module draw_bg (
     end
 
     always_comb begin
+        finish_nxt = finish;
+
         if (vga_in.vblnk || vga_in.hblnk) begin
             rgb_nxt = 12'h0_0_0;  // Black color during blanking
         end else begin
-            case (level)
-                LEVEL_0: begin
-                    rgb_nxt = bg0[pixel_address];
-                end
-                LEVEL_1: begin
-                    rgb_nxt = bg1[pixel_address];
-                end
-                LEVEL_2: begin
-                    rgb_nxt = bg2[pixel_address];
-                end
-                LEVEL_3: begin
-                    rgb_nxt = bg3[pixel_address];
-                end
-                default: begin
-                    rgb_nxt = 12'h0_0_0;  // Default to black if level is unknown
-                end
-            endcase
+            if((level == 2'b11 && y_value > 100 && y_value < 112 && x_value > 500 && x_value < 700) || finish) begin
+                rgb_nxt = map_finish[pixel_address];
+                finish_nxt = 1;
+            end else if (level == 2'b00 && !sync_signal) begin
+                rgb_nxt = map_start[pixel_address];
+            end
+            else begin 
+                rgb_nxt = vga_in.rgb;
         end
     end
+end
 endmodule 
 
 

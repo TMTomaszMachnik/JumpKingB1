@@ -16,6 +16,9 @@ module top_vga (
         input  logic clk,
         input  logic clk100,
         input  logic rst,
+        input  logic sw0,
+        input  logic sync_remote, 
+        output logic sync_local,
         output logic vs,
         output logic hs,
         output logic [3:0] r,
@@ -44,7 +47,8 @@ module top_vga (
     vga_if vga_if_bg_uart();
     vga_if vga_if_uart_ctl();
     vga_if vga_if_ctl_r();
-    vga_if vga_if_r_out();
+    vga_if vga_if_r_fin();
+    vga_if vga_if_fin_out();
 
 
     /**
@@ -56,9 +60,9 @@ module top_vga (
      * Signals assignments
      */
     
-    assign vs = vga_if_r_out.vsync;
-    assign hs = vga_if_r_out.hsync;
-    assign {r,g,b} = vga_if_r_out.rgb;
+    assign vs = vga_if_fin_out.vsync;
+    assign hs = vga_if_fin_out.hsync;
+    assign {r,g,b} = vga_if_fin_out.rgb;
 
     wire [11:0] x_pos;
     wire [11:0] y_pos;
@@ -66,8 +70,6 @@ module top_vga (
     wire [11:0] address;
 
     wire left;
-    wire [11:0] x_pos_pre;
-    wire [11:0] y_pos_pre;
     wire [15:0] keyboard_data;
     wire f_EOT;
 
@@ -78,7 +80,6 @@ module top_vga (
     wire key_left;
 
     wire [1:0] current_level;
-    wire [1:0] collision [0:3071];
     /**
      * Submodules instances
      */
@@ -175,11 +176,26 @@ module top_vga (
         .clk,
         .rst,
         .vga_in(vga_if_ctl_r.in),
-        .vga_out(vga_if_r_out.out),
+        .vga_out(vga_if_r_fin.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),
         .x_value(x_pos),
         .y_value(y_pos)
+    );
+
+    wire sync_signal;
+    assign sync_local = sw0;
+    assign sync_signal = sync_remote && sync_local;
+
+    draw_finish u_draw_finish(
+        .clk,
+        .rst,
+        .vga_in(vga_if_r_fin.in),
+        .vga_out(vga_if_fin_out.out),
+        .level(current_level),
+        .x_value(x_pos),
+        .y_value(y_pos),
+        .sync_signal(sync_signal)
     );
 
 

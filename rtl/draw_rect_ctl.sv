@@ -61,7 +61,6 @@ logic facing;
 logic facing_nxt;
 logic [6:0] jump_vel;
 logic [6:0] jump_vel_nxt;
-logic stable;
 
 logic [5:0] fall_bottom;
 logic [5:0] fall_bottom_nxt;

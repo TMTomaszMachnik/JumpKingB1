@@ -35,6 +35,7 @@ set sv_files {
     ../rtl/vga_pkg.sv
     ../rtl/vga_timing.sv
     ../rtl/draw_bg.sv
+    ../rtl/draw_finish.sv
     ../rtl/draw_rect.sv
     ../rtl/draw_char_uart.sv
     ../rtl/vga_if.sv
@@ -73,6 +74,10 @@ set mem_files {
   ../rtl/Graphics/micro.data
   ../rtl/Graphics/bg0.data
   ../rtl/Graphics/bg1.data
+  ../rtl/Graphics/bg2.data
+  ../rtl/Graphics/bg3.data
+  ../rtl/Graphics/map_start.data
+  ../rtl/Graphics/map_finish.data
   ../rtl/Graphics/micro_curled.data
   ../rtl/Graphics/micro_jump.data
   ../rtl/Graphics/micro_left.data
