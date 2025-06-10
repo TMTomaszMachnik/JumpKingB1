@@ -31,6 +31,11 @@ module top_vga_basys3 (
         input wire JA6,
         output wire JA7,
 
+        input wire sw0,
+
+        input wire JB1,
+        output wire JB2,
+
         inout  wire PS2Clk,
         inout  wire PS2Data
 
@@ -109,6 +114,10 @@ module top_vga_basys3 (
         .tx2(JA5),
         .rx3(JA6),
         .tx3(JA7),
+
+        .local_sync(sw0),
+        .sync_out(JB2),
+        .sync_in(JB1),
 
         .ps2_clk(PS2Clk),
         .ps2_data(PS2Data)

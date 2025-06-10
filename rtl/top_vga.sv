@@ -29,6 +29,10 @@ module top_vga (
         input logic rx3,
         output logic tx3,
 
+        input logic local_sync,
+        output logic sync_out,
+        input logic sync_in,
+
         input  ps2_clk,
         input  ps2_data
 
@@ -50,16 +54,7 @@ module top_vga (
     /**
      * Local variables and signals
      */
-
      
-    /**
-     * Signals assignments
-     */
-    
-    assign vs = vga_if_r_out.vsync;
-    assign hs = vga_if_r_out.hsync;
-    assign {r,g,b} = vga_if_r_out.rgb;
-
     wire [11:0] x_pos;
     wire [11:0] y_pos;
     wire [11:0] rgb_pixel;
@@ -79,6 +74,18 @@ module top_vga (
 
     wire [1:0] current_level;
     wire [1:0] collision [0:3071];
+
+     
+    /**
+     * Signals assignments
+     */
+    
+    assign vs = vga_if_r_out.vsync;
+    assign hs = vga_if_r_out.hsync;
+    assign {r,g,b} = vga_if_r_out.rgb;
+
+    assign sync_out = local_sync;
+
     /**
      * Submodules instances
      */
@@ -129,7 +136,7 @@ module top_vga (
         .vga_out(vga_if_uart_ctl.out),
         .pixel_addr(address_uart),
         .rgb_pixel(rgb_pixel_uart),
-        .x_value({dummy_uart,data_2[2:0],data_1}),
+        .x_value({dummy_uart,data_2[2:0],data_1[7:0]} + 50),
         .y_value({dummy_uart,data_3[5:0],data_2[7:3]})
     );
 
@@ -153,6 +160,7 @@ module top_vga (
         .vga_in(vga_if_uart_ctl.in),
         .vga_out(vga_if_ctl_r.out)
     );
+    
 
     uart_ctl uart_1(
         .clk(clk100),
@@ -160,7 +168,9 @@ module top_vga (
         .data_in(x_pos[7:0]),
         .data_out(data_1),
         .rx(rx1),
-        .tx(tx1)
+        .tx(tx1),
+        .local_sync(local_sync),
+        .sync_in(sync_in)
     );
 
     uart_ctl uart_2(
@@ -169,7 +179,9 @@ module top_vga (
         .data_in({y_pos[4:0],x_pos[10:8]}),
         .data_out(data_2),
         .rx(rx2),
-        .tx(tx2)
+        .tx(tx2),
+        .local_sync(local_sync),
+        .sync_in(sync_in)
     );
 
     uart_ctl uart_3(
@@ -178,9 +190,11 @@ module top_vga (
         .data_in({current_level,y_pos[10:5]}),
         .data_out(data_3),
         .rx(rx3),
-        .tx(tx3)
+        .tx(tx3),
+        .local_sync(local_sync),
+        .sync_in(sync_in)
     );
-
+    
     draw_rect u_draw_rect (
         .clk,
         .rst,

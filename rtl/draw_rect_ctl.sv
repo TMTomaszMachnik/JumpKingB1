@@ -40,8 +40,8 @@ localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 localparam OFFSET = 12'd10;
 localparam MAX_LEVEL = 4;
-localparam y_start = VER_PIXELS - REC_HEIGHT - 64; 
-localparam x_start = 12'd70; //12'd50;
+localparam Y_START = VER_PIXELS - REC_HEIGHT - 64; 
+localparam X_START = 12'd70; //12'd50;
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
@@ -172,9 +172,9 @@ always_ff @(posedge clk) begin : out_reg_blk
     if(rst) begin : out_reg_rst_blk
         vel_time <= '0;
         counter <= '0;
-        value_x <= x_start;
-        value_y <= y_start;
-        y_pos <= y_start;
+        value_x <= X_START;
+        value_y <= Y_START;
+        y_pos <= Y_START;
         character_skin <= MICRO_IDLE; 
         jump_vel <= VELOCITY; 
         counter_sd <= '0;
@@ -183,7 +183,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= 1'b0;
         collision_bot <= 1'b1;
         collision_top <= 1'b0;
-        fall_bottom <= y_start;
+        fall_bottom <= Y_START;
     end
     else begin : out_reg_run_blk
         vel_time <= vel_time_nxt;
@@ -224,7 +224,7 @@ end
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        y_jump_start <= y_start;
+        y_jump_start <= Y_START;
     end else begin
         y_jump_start <= y_jump_start_nxt;
     end
@@ -388,7 +388,7 @@ always_comb begin : out_comb_blk
             end 
 
             // Horizontal movement during jump
-            if(counter_sd == CTR_MAX && value_x >= x_start && value_x <= HOR_PIXELS - REC_WIDTH - 1) begin
+            if((counter_sd == CTR_MAX) && (value_x >= '0) && (value_x <= HOR_PIXELS - REC_WIDTH - 1)) begin
                 counter_sd_nxt = 0;
 
                 if(facing_nxt) begin
@@ -437,14 +437,14 @@ always_comb begin : out_comb_blk
                         y_pos_nxt = value_y_nxt;
                         fall_bottom_nxt = VER_PIXELS;
                     end else begin
-                        fall_bottom_nxt = y_start;
+                        fall_bottom_nxt = Y_START;
                 end
             end else begin
                 counter_nxt = counter + 1;
                 y_jump_start_nxt = y_jump_start;
             end
             
-            if (counter_sd == CTR_MAX && value_x >= x_start) begin
+            if ((counter_sd == CTR_MAX) && (value_x >= '0) && (value_x <= HOR_PIXELS - REC_WIDTH - 1)) begin
                 counter_sd_nxt = 0;
                 
                 if (facing_nxt) begin

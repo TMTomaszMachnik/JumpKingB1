@@ -1,4 +1,3 @@
-
 module draw_bg (
     input logic clk,
     input logic rst,
@@ -22,16 +21,16 @@ module draw_bg (
 
     typedef enum logic [1:0] {
         LEVEL_0 = 2'd0,
-        LEVEL_1 = 2'd1
-        // LEVEL_2 = 2'd2,
-        // LEVEL_3 = 2'd3
+        LEVEL_1 = 2'd1,
+        LEVEL_2 = 2'd2,
+        LEVEL_3 = 2'd3
     } level_t;  
 
     // Background and collision map arrays
     logic [11:0] bg0 [0:MEM_SIZE-1];
     logic [11:0] bg1 [0:MEM_SIZE-1];
-    // logic [11:0] bg2 [0:MEM_SIZE-1];
-    // logic [11:0] bg3 [0:MEM_SIZE-1];
+    logic [11:0] bg2 [0:MEM_SIZE-1];
+    logic [11:0] bg3 [0:MEM_SIZE-1];
 
     logic [11:0] dummy_rgb;
     assign dummy_rgb = vga_in.rgb;
@@ -60,8 +59,8 @@ module draw_bg (
     initial begin
         $readmemh("../../rtl/Graphics/bg0.data", bg0);
         $readmemh("../../rtl/Graphics/bg1.data", bg1);
-        // $readmemh("../../rtl/Graphics/bg2.data", bg2);
-        // $readmemh("../../rtl/Graphics/bg3.data", bg3);
+        $readmemh("../../rtl/Graphics/bg2.data", bg2);
+        $readmemh("../../rtl/Graphics/bg3.data", bg3);
     end
 
     logic [11:0] scaled_hcount, scaled_vcount;
@@ -84,14 +83,12 @@ module draw_bg (
                 LEVEL_1: begin
                     rgb_nxt = bg1[pixel_address];
                 end
-                // LEVEL_2: begin
-                //     rgb_nxt = bg2[pixel_address];
-                //     collision_out_nxt = map2;  // Output the entire map2
-                // end
-                // LEVEL_3: begin
-                //     rgb_nxt = bg3[pixel_address];
-                //     collision_out_nxt = map3;  // Output the entire map3
-                // end
+                LEVEL_2: begin
+                    rgb_nxt = bg2[pixel_address];
+                end
+                LEVEL_3: begin
+                    rgb_nxt = bg3[pixel_address];
+                end
                 default: begin
                     rgb_nxt = 12'h0_0_0;  // Default to black if level is unknown
                 end
@@ -99,7 +96,3 @@ module draw_bg (
         end
     end
 endmodule 
-
-
-
-

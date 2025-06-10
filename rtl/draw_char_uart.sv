@@ -91,7 +91,7 @@ always_comb begin : bg_comb_blk
                     (hcount_buf[C_DELAY_LEN-1] - x_value);
         
         if (rgb_pixel != 12'hF_A_C) begin
-            rgb_nxt = rgb_pixel;
+            rgb_nxt = rgb_pixel + 1234;
         end
     end
     end

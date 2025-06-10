@@ -45,6 +45,7 @@ set sv_files {
     rtl/top_vga_basys3.sv
     ../rtl/UART/data_tx.sv
     ../rtl/UART/uart_ctl.sv
+    ../rtl/UART/sync_data.sv
 }
 
 # Specify Verilog design files location         -- EDIT
@@ -73,6 +74,8 @@ set mem_files {
   ../rtl/Graphics/micro.data
   ../rtl/Graphics/bg0.data
   ../rtl/Graphics/bg1.data
+  ../rtl/Graphics/bg2.data
+  ../rtl/Graphics/bg3.data
   ../rtl/Graphics/micro_curled.data
   ../rtl/Graphics/micro_jump.data
   ../rtl/Graphics/micro_left.data

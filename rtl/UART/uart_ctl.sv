@@ -3,6 +3,8 @@ module uart_ctl (
         input  logic           rst,
         input  logic [7:0] data_in,
         input logic             rx,
+        input logic             sync_in,
+        input logic             local_sync,
 
         output logic            tx,
         output logic [7:0] data_out
@@ -31,7 +33,6 @@ module uart_ctl (
         if (rst) begin
             tx <= '0;
             data_out <= '0;
-
         end else begin
             tx <= tx_nxt;
             data_out <= data_out_nxt;
@@ -64,10 +65,13 @@ module uart_ctl (
     data_tx data_tx_inst (
         .clk(clk),
         .rst(rst),
+        .sync_in(sync_in),
+        .local_sync(local_sync),
         .tx_full(tx_full),
         .data_in(data_in),
         .w_data(w_data),
-        .wr_uart(wr_uart)
+        .wr_uart(wr_uart),
+        .r_data(r_data)
     );
 
 endmodule
