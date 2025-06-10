@@ -1,3 +1,13 @@
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle keyboard input for controlling the game character.
+*/
+
 module keyboard_ctl (
     input  logic clk,
     input  logic rst,
@@ -14,7 +24,10 @@ timeprecision 1ps;
 logic [15:0] keycode;
 logic f_EOT;
 
-
+localparam int KEYCODE_SPACE = 8'h29; 
+localparam int KEYCODE_RIGHT = 8'h23;
+localparam int KEYCODE_LEFT  = 8'h1C;
+localparam int KEYCODE_RELEASE   = 8'hF0; 
 
 PS2Receiver u_ps2_receiver (
     .clk(clk),
@@ -26,23 +39,23 @@ PS2Receiver u_ps2_receiver (
 
 always_comb begin
 
-        if(keycode[15:8] == 8'hF0) begin
+        if(keycode[15:8] == KEYCODE_RELEASE) begin
                  key_space = 1'b0;
                  key_right = 1'b0;
                  key_left = 1'b0;
         end
         else begin
-            if(keycode[7:0] == 8'h29) begin
+            if(keycode[7:0] == KEYCODE_SPACE) begin
                 key_space = 1'b1; 
             end else begin
                 key_space= 1'b0; 
             end
-            if(keycode[7:0] == 8'h23) begin
+            if(keycode[7:0] == KEYCODE_RIGHT) begin
                 key_right = 1'b1; 
             end else begin
                 key_right = 1'b0; 
             end
-            if(keycode[7:0] == 8'h1C) begin
+            if(keycode[7:0] == KEYCODE_LEFT) begin
                 key_left = 1'b1; 
             end else begin
                 key_left = 1'b0; 

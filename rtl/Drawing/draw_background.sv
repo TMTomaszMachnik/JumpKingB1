@@ -1,3 +1,12 @@
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle keyboard debouncing
+*/
 
 module draw_bg (
     input logic clk,
@@ -10,15 +19,18 @@ module draw_bg (
     timeunit 1ns;
     timeprecision 1ps;
 
-    import vga_pkg::*;
+    import vga_pkg::*;                                  // Package with important VGA display constants
 
-    localparam int IMAGE_WIDTH = 64; 
-    localparam int IMAGE_HEIGHT = 48;
+
+    /**
+     * Parameters for the background image scaling and size to fit the FPGA memoory
+     */
+
+    localparam int IMAGE_WIDTH = 64;                    
+    localparam int IMAGE_HEIGHT = 48;                  
     localparam MEM_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT;
     localparam SCALE_X = 16;
     localparam SCALE_Y = 16; 
-    logic [11:0] rgb_nxt;
-
 
     typedef enum logic [1:0] {
         LEVEL_0 = 2'd0,
@@ -27,14 +39,23 @@ module draw_bg (
         LEVEL_3 = 2'd3
     } level_t;  
 
-    // Background and collision map arrays
+    /**
+     * Background image data arrays
+     * Each array corresponds to a different level of the game.
+     */
+
     logic [11:0] bg0 [0:MEM_SIZE-1];
     logic [11:0] bg1 [0:MEM_SIZE-1];
     logic [11:0] bg2 [0:MEM_SIZE-1];
     logic [11:0] bg3 [0:MEM_SIZE-1];
+    logic [11:0] rgb_nxt;
+    logic [11:0] scaled_hcount, scaled_vcount;
+    logic [11:0] pixel_address;
 
-
-    // VGA signals
+    /**
+     * Reset logic
+     */
+    
     always_ff @(posedge clk) begin : bg_ff_blk
         if (rst) begin
             vga_out.vcount <= '0;
@@ -55,6 +76,10 @@ module draw_bg (
         end
     end
 
+    /**
+     * Background image data loading from external files
+     */
+
     initial begin
         $readmemh("../../rtl/Graphics/bg0.data", bg0);
         $readmemh("../../rtl/Graphics/bg1.data", bg1);
@@ -62,8 +87,9 @@ module draw_bg (
         $readmemh("../../rtl/Graphics/bg3.data", bg3);
     end
 
-    logic [11:0] scaled_hcount, scaled_vcount;
-    logic [11:0] pixel_address;
+    /**
+     * Background drawing logic
+     */
 
     always_comb begin
         scaled_hcount = vga_in.hcount / SCALE_X;
@@ -73,7 +99,7 @@ module draw_bg (
 
     always_comb begin
         if (vga_in.vblnk || vga_in.hblnk) begin
-            rgb_nxt = 12'h0_0_0;  // Black color during blanking
+            rgb_nxt = 12'h0_0_0;  
         end else begin
             case (level)
                 LEVEL_0: begin
@@ -89,7 +115,7 @@ module draw_bg (
                     rgb_nxt = bg3[pixel_address];
                 end
                 default: begin
-                    rgb_nxt = 12'h0_0_0;  // Default to black if level is unknown
+                    rgb_nxt = 12'h0_0_0;  
                 end
             endcase
         end

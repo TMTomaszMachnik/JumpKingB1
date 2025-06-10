@@ -1,18 +1,31 @@
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle UART control for multiple channels.
+*/
+
+
 module uart_ctl (
         input  logic           clk,
         input  logic           rst,
-        input  logic [7:0] data_in_1,
+
+        input  logic [7:0] data_in_1,           // UART data input
         input  logic [7:0] data_in_2,
         input  logic [7:0] data_in_3,
-        input logic             rx_1,
+
+        input logic             rx_1,           // UART receive signals for each channel
         input logic             rx_2,
         input logic             rx_3,
 
-        output logic            tx_1,
+        output logic            tx_1,           // UART transmit signals for each channel
         output logic            tx_2,
         output logic            tx_3,
 
-        output logic [7:0] data_out_1,
+        output logic [7:0] data_out_1,          // UART data output
         output logic [7:0] data_out_2,
         output logic [7:0] data_out_3
     );
@@ -24,7 +37,7 @@ module uart_ctl (
      * Local variables and signals
      */
 
-    logic [7:0] r_data_1;
+    logic [7:0] r_data_1;                       // Channel 1
     logic [7:0] w_data_1;
     logic       rx_empty_1, tx_full_1;
     logic       rd_uart_1, wr_uart_1;
@@ -32,7 +45,7 @@ module uart_ctl (
     logic [7:0] data_out_nxt_1;
     logic tx_uart_1;
     
-    logic [7:0] r_data_2;
+    logic [7:0] r_data_2;                       // Channel 2
     logic [7:0] w_data_2;
     logic       rx_empty_2, tx_full_2;
     logic       rd_uart_2, wr_uart_2;
@@ -40,7 +53,7 @@ module uart_ctl (
     logic [7:0] data_out_nxt_2;
     logic tx_uart_2;
 
-    logic [7:0] r_data_3;
+    logic [7:0] r_data_3;                       // Channel 3
     logic [7:0] w_data_3;
     logic       rx_empty_3, tx_full_3;
     logic       rd_uart_3, wr_uart_3;
@@ -49,8 +62,9 @@ module uart_ctl (
     logic tx_uart_3;
 
     /**
-     * Signals assignments
+     * Signals assignments and reset logic
      */
+
      always_ff @(posedge clk) begin
         if (rst) begin
             tx_1 <= 1'b0;

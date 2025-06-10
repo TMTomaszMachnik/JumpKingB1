@@ -1,13 +1,22 @@
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle drawing the starting and finish screen of the game
+*/
 
 module draw_finish (
     input logic clk,
     input logic rst,
     input logic [1:0] level,
-    vga_if.in vga_in,
-    vga_if.out vga_out,
     input logic [11:0] x_value,
     input logic [11:0] y_value,
-    input logic sync_signal
+    input logic sync_signal,
+    vga_if.in vga_in,
+    vga_if.out vga_out
 );
 
     timeunit 1ns;
@@ -15,25 +24,36 @@ module draw_finish (
 
     import vga_pkg::*;
 
+    
+    /**
+     * Parameters for the background image scaling and size to fit the FPGA memoory
+     */
+
     localparam int IMAGE_WIDTH = 64; 
     localparam int IMAGE_HEIGHT = 48;
     localparam MEM_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT;
     localparam SCALE_X = 16;
     localparam SCALE_Y = 16; 
+
+    /**
+     * Parameters for the finish area coordinates
+     * 
+     */
+
+    localparam int FINISH_X_LEFT = 500;
+    localparam int FINISH_X_RIGHT = 700;
+    localparam int FINISH_Y_UP = 100;
+    localparam int FINISH_Y_DOWN = 112;
+
     logic [11:0] rgb_nxt;
-
-
-    typedef enum logic{
-        START = 0,
-        FINISH = 1
-    } game_state_t;
-
-    // Background and collision map arrays
     logic [11:0] map_start [0:MEM_SIZE-1];
     logic [11:0] map_finish [0:MEM_SIZE-1];
+    logic [11:0] scaled_hcount, scaled_vcount;
+    logic [11:0] pixel_address;
     logic finish;
     logic finish_nxt;
-    // VGA signals
+
+
     always_ff @(posedge clk) begin : bg_ff_blk
         if (rst) begin
             vga_out.vcount <= '0;
@@ -61,8 +81,7 @@ module draw_finish (
         $readmemh("../../rtl/Graphics/map_finish.data", map_finish);
     end
 
-    logic [11:0] scaled_hcount, scaled_vcount;
-    logic [11:0] pixel_address;
+
 
     always_comb begin
         scaled_hcount = vga_in.hcount / SCALE_X;
@@ -76,7 +95,7 @@ module draw_finish (
         if (vga_in.vblnk || vga_in.hblnk) begin
             rgb_nxt = 12'h0_0_0;  // Black color during blanking
         end else begin
-            if((level == 2'b11 && y_value > 100 && y_value < 112 && x_value > 500 && x_value < 700) || finish) begin
+            if((level == 2'b11 && y_value > FINISH_Y_UP && y_value < FINISH_Y_DOWN && x_value > FINISH_X_LEFT && x_value < FINISH_X_RIGHT) || finish) begin
                 rgb_nxt = map_finish[pixel_address];
                 finish_nxt = 1;
             end else if (level == 2'b00 && !sync_signal) begin

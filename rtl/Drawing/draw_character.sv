@@ -1,4 +1,4 @@
-module draw_rect (
+module draw_character (
     input  logic clk,
     input  logic rst,
 

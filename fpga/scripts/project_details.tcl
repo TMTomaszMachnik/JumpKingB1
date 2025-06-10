@@ -32,28 +32,28 @@ set xdc_files {
 
 # Specify SystemVerilog design files location   -- EDIT
 set sv_files {
-    ../rtl/vga_pkg.sv
-    ../rtl/vga_timing.sv
-    ../rtl/draw_bg.sv
-    ../rtl/draw_finish.sv
-    ../rtl/draw_rect.sv
-    ../rtl/draw_char_uart.sv
-    ../rtl/vga_if.sv
-    ../rtl/draw_rect_ctl.sv  
-    ../rtl/keyboard_ctl.sv
-    ../rtl/top_vga.sv
-    ../rtl/rom_files/image_rom.sv
-    rtl/top_vga_basys3.sv
+    ../rtl/VGA_Display/vga_pkg.sv
+    ../rtl/VGA_Display/vga_timing.sv
+    ../rtl/VGA_Display/vga_if.sv
+    ../rtl/Drawing/draw_bg.sv
+    ../rtl/Drawing/draw_finish.sv
+    ../rtl/Drawing/draw_rect.sv
+    ../rtl/Drawing/draw_char_uart.sv
+    ../rtl/Drawing/draw_rect_ctl.sv  
+    ../rtl/Drawing/character_skin.sv
+    ../rtl/Keyboard/keyboard_ctl.sv
     ../rtl/UART/data_tx.sv
     ../rtl/UART/uart_ctl.sv
+    ../rtl/top_vga.sv
+    rtl/top_vga_basys3.sv
 }
 
 # Specify Verilog design files location         -- EDIT
 set verilog_files {
     ../fpga/rtl/clk_wiz_0.v
     ../fpga/rtl/clk_wiz_0_clk_wiz.v
-    ../rtl/PS2Receiver.v
-    ../rtl/debouncer.v
+    ../rtl/Keyboard/PS2Receiver.v
+    ../rtl/Keyboard/debouncer.v
     ../rtl/UART/fifo.v
     ../rtl/UART/flag_buf.v
     ../rtl/UART/mod_m_counter.v

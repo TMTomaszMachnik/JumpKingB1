@@ -4,36 +4,36 @@
  * Author: prof. Eric Crabilla
  *
  * Modified by:
- * 2025  AGH University of Science and Technology
- * MTM UEC2
- * Piotr Kaczmarczyk
+ * * 2025  AGH University of Science and Technology
+ * MTM UEC2 Final Project
+ * Miłosz Płonczyński and Tomasz Machnik 
  *
  * Description:
  * Top level synthesizable module including the project top and all the FPGA-referred modules.
  */
 
 module top_vga_basys3 (
-        input  wire clk,
+        input  wire clk,                     // Synchronnous reset and clock
         input  wire btnC,
-        // input  wire  bleft,
-        // input  wire  bright,
-        // input  wire  space,
-        output wire Vsync,
+
+        output wire Vsync,                   // VGA Signals
         output wire Hsync,
-        output wire [3:0] vgaRed,
+        output wire [3:0] vgaRed,          
         output wire [3:0] vgaGreen,
         output wire [3:0] vgaBlue,
-        output wire JA1,
-        input wire JA2,
-        output wire JA3,
+
+        input wire JA2,                      // UART signals
         input wire JA4,
-        output wire JA5,
         input wire JA6,
+        input wire JB2,
+
+        output wire JA1,                   
+        output wire JA3,
+        output wire JA5,   
         output wire JA7,
         output wire JB1,
-        input wire JB2,
-        input wire sw0,
-
+           
+        input wire sw0,                     // Peripheral signals
         inout  wire PS2Clk,
         inout  wire PS2Data
 
@@ -54,16 +54,12 @@ module top_vga_basys3 (
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
     logic [7:0] safe_start = 0;
-    // For details on synthesis attributes used above, see AMD Xilinx UG 901:
-    // https://docs.xilinx.com/r/en-US/ug901-vivado-synthesis/Synthesis-Attributes
-
 
     /**
      * Signals assignments
      */
 
     assign JA1 = clk_65_mirror;
-
 
     /**
      * FPGA submodules placement
@@ -96,7 +92,7 @@ module top_vga_basys3 (
      *  Project functional top module
      */
 
-    top_vga u_top_vga (
+    top_vga u_top_vga (                 // Top module instantiation
         .clk(clk_65),
         .clk100(clk_100),
         .rst(btnC),
@@ -117,9 +113,6 @@ module top_vga_basys3 (
         .sync_remote(JB2),
         .ps2_clk(PS2Clk),
         .ps2_data(PS2Data)
-        // .bleft(bleft),
-        // .bright(bright),
-        // .space(space)
     );
 
 endmodule

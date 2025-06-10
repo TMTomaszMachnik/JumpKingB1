@@ -1,16 +1,12 @@
-/**
- * San Jose State University
- * EE178 Lab #4
- * Author: prof. Eric Crabilla
- *
- * Modified by:
- * 2025  AGH University of Science and Technology
- * MTM UEC2
- * Piotr Kaczmarczyk
- *
- * Description:
- * The project top module.
- */
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Game top module connecting all the sub-modules to the clock and together
+*/
 
 module top_vga (
         input  logic clk,
@@ -18,6 +14,9 @@ module top_vga (
         input  logic rst,
         input  logic sw0,
         input  logic sync_remote, 
+        input  ps2_clk,
+        input  ps2_data,
+
         output logic sync_local,
         output logic vs,
         output logic hs,
@@ -26,22 +25,20 @@ module top_vga (
         output logic [3:0] b,
 
         input logic rx1,
-        output logic tx1,
         input logic rx2,
-        output logic tx2,
         input logic rx3,
-        output logic tx3,
 
-        input  ps2_clk,
-        input  ps2_data
-
-        // input wire bleft,
-        // input wire bright,
-        // input wire space
+        output logic tx1,
+        output logic tx2,
+        output logic tx3
     );
 
     timeunit 1ns;
     timeprecision 1ps;
+
+    /**
+    * Module interfaces
+    */
 
     vga_if vga_if_t_bg();
     vga_if vga_if_bg_uart();
@@ -49,11 +46,6 @@ module top_vga (
     vga_if vga_if_ctl_r();
     vga_if vga_if_r_fin();
     vga_if vga_if_fin_out();
-
-
-    /**
-     * Local variables and signals
-     */
 
      
     /**
@@ -63,6 +55,10 @@ module top_vga (
     assign vs = vga_if_fin_out.vsync;
     assign hs = vga_if_fin_out.hsync;
     assign {r,g,b} = vga_if_fin_out.rgb;
+
+    /**
+     * Wires
+     */
 
     wire [11:0] x_pos;
     wire [11:0] y_pos;
@@ -80,6 +76,7 @@ module top_vga (
     wire key_left;
 
     wire [1:0] current_level;
+
     /**
      * Submodules instances
      */
@@ -94,7 +91,6 @@ module top_vga (
         .key_left(key_left)
     );
 
-
     vga_timing u_vga_timing (
         .clk,
         .rst,
@@ -106,7 +102,7 @@ module top_vga (
         .hblnk  (vga_if_t_bg.hblnk)
     );
 
-    draw_bg u_draw_bg (
+    draw_background u_draw_background (
         .clk,
         .rst,
         .level(current_level),
@@ -121,7 +117,7 @@ module top_vga (
     wire dummy_uart;
     assign dummy_uart = 0;
 
-    draw_char_uart u_draw_char_uart(
+    draw_player_UART u_draw_player_UART(
         .clk,
         .rst,
         .level_home(current_level),
@@ -134,14 +130,14 @@ module top_vga (
         .y_value({dummy_uart,data_3[5:0],data_2[7:3]})
     );
 
-    image_rom u_image_rom_uart(
+    character_skin u_character_skin(
         .clk,
         .rgb(rgb_pixel_uart),
         .address(address_uart),
         .character_skin('0)
     );
 
-    draw_rect_ctl u_draw_rect_ctl(
+    jump_king_ctl u_jump_king_ctl(
         .clk(clk100),
         .rst(rst),
         .key_space(key_space),
@@ -165,7 +161,7 @@ module top_vga (
         .data_in_2({y_pos[4:0],x_pos[10:8]}),
         .data_out_2(data_2),
         .rx_2(rx2),
-        .tx_2(tx2),
+        .tx_2(tx2),`
         .data_in_3({current_level,y_pos[10:5]}),
         .data_out_3(data_3),
         .rx_3(rx3),
@@ -198,23 +194,11 @@ module top_vga (
         .sync_signal(sync_signal)
     );
 
-
-    image_rom u_image_rom(
+    character_skin u_character_skin(
         .clk,
         .rgb(rgb_pixel),
         .address(address),
         .character_skin(character_skin)
     );
-
-    // draw_rect_ctl u_draw_rect_ctl(
-    //     .clk(clk100),
-    //     .rst(rst),
-    //     .key_space(key_space),
-    //     .key_right(key_right),
-    //     .key_left(key_left),
-    //     .value_x(x_pos),
-    //     .value_y(y_pos),
-    //     .character_state(char_state)
-    // );
 
 endmodule
