@@ -154,31 +154,21 @@ module top_vga (
         .vga_out(vga_if_ctl_r.out)
     );
 
-    uart_ctl uart_1(
+    uart_ctl u_uart(
         .clk(clk100),
         .rst(rst),
-        .data_in(x_pos[7:0]),
-        .data_out(data_1),
-        .rx(rx1),
-        .tx(tx1)
-    );
-
-    uart_ctl uart_2(
-        .clk(clk100),
-        .rst(rst),
-        .data_in({y_pos[4:0],x_pos[10:8]}),
-        .data_out(data_2),
-        .rx(rx2),
-        .tx(tx2)
-    );
-
-    uart_ctl uart_3(
-        .clk(clk100),
-        .rst(rst),
-        .data_in({current_level,y_pos[10:5]}),
-        .data_out(data_3),
-        .rx(rx3),
-        .tx(tx3)
+        .data_in_1(x_pos[7:0]),
+        .data_out_1(data_1),
+        .rx_1(rx1),
+        .tx_1(tx1),
+        .data_in_2({y_pos[4:0],x_pos[10:8]}),
+        .data_out_2(data_2),
+        .rx_2(rx2),
+        .tx_2(tx2),
+        .data_in_3({current_level,y_pos[10:5]}),
+        .data_out_3(data_3),
+        .rx_3(rx3),
+        .tx_3(tx3)
     );
 
     draw_rect u_draw_rect (
