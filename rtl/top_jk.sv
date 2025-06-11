@@ -81,15 +81,23 @@ module top_jk (
 
     wire [11:0] rgb_pixel_crown;
     wire [11:0] address_crown; 
+
+    wire [15:0] keycode;
     /**
      * Submodules instances
      */
 
+
+    PS2Receiver u_ps2_receiver (
+    .clk(clk100),
+    .ps2_clk(ps2_clk),
+    .ps2_data(ps2_data),
+    .keycode(keycode),
+    .oflag()
+    );
+
     keyboard_ctl u_keyboard_ctl (
-        .clk(clk100),
-        .rst(rst),
-        .ps2_clk(ps2_clk),
-        .ps2_data(ps2_data),
+        .keycode(keycode),
         .key_space(key_space),
         .key_right(key_right),
         .key_left(key_left)

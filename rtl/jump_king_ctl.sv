@@ -90,8 +90,6 @@ logic top_reached;
 
 logic signed [11:0] value_y_temp;
 logic signed [11:0] value_y_temp_nxt;
-logic [5:0] fall_bottom;
-logic [5:0] fall_bottom_nxt;
 logic [1:0] level_nxt;
 
 /**
@@ -215,7 +213,6 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= 1'b0;
         collision_bot   <= 1'b1;
         collision_top   <= 1'b0;
-        fall_bottom     <= Y_START;
     end else begin : out_reg_run_blk
         vel_time        <= vel_time_nxt;
         counter         <= counter_nxt;
@@ -231,7 +228,6 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= collision_right_nxt;
         collision_bot   <= collision_bot_nxt;
         collision_top   <= collision_top_nxt;
-        fall_bottom     <= fall_bottom_nxt;
     end
 end
 
@@ -303,7 +299,6 @@ always_comb begin : out_comb_blk
     counter_sd_nxt = counter_sd;
     facing_nxt = facing;
     level_nxt = level;
-    fall_bottom_nxt = fall_bottom;
     value_y_temp_nxt = '0; 
 
     collision_left_nxt = collision_left;
@@ -399,9 +394,9 @@ always_comb begin : out_comb_blk
             //  Calculate the next vertical position based on the jump physics
 
             value_y_temp_nxt = y_jump_start + ((A * vel_time * vel_time) / (2 * DIV)) - (jump_vel * vel_time);
-            if (value_y_temp_nxt > VER_PIXELS) begin
+            if (value_y_temp > VER_PIXELS) begin
                 value_y_temp_nxt = VER_PIXELS;
-            end else if (value_y_temp_nxt < 0) begin
+            end else if (value_y_temp < 0) begin
                 value_y_temp_nxt = 0;
             end
 
@@ -422,8 +417,7 @@ always_comb begin : out_comb_blk
             end else if (value_y <= 5) begin  
                     if (level < MAX_LEVEL) begin
                         level_nxt = level + 1;        
-                        value_y_nxt = VER_PIXELS - 10;  
-                        fall_bottom_nxt = VER_PIXELS;   
+                        value_y_nxt = VER_PIXELS - 10;   
                         y_pos_nxt = value_y_nxt;
                         y_jump_start_nxt  = value_y_nxt; 
                         vel_time_nxt = vel_time;
@@ -454,9 +448,9 @@ always_comb begin : out_comb_blk
             //  Calculate the next vertical position based on the falling physics
 
             value_y_temp_nxt = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
-            if (value_y_temp_nxt > VER_PIXELS) begin
+            if (value_y_temp > VER_PIXELS) begin
                 value_y_temp_nxt = VER_PIXELS;
-            end else if (value_y_temp_nxt < 0) begin
+            end else if (value_y_temp < 0) begin
                 value_y_temp_nxt = 0;
             end
             
@@ -482,11 +476,7 @@ always_comb begin : out_comb_blk
                     level_nxt = level - 1;
                     value_y_nxt = 10;
                     y_pos_nxt = value_y_nxt;
-                    fall_bottom_nxt = VER_PIXELS;
-                end else begin
-                    fall_bottom_nxt = Y_START;
                 end
-
             end else begin
                 counter_nxt = counter + 1;
                 y_jump_start_nxt = y_jump_start;

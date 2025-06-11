@@ -46,14 +46,13 @@ module JumpKing (
      * Local variables and signals
      */
 
-    wire clk_ss;
     wire clk_65, clk_100;
     wire locked;
     wire clk_65_mirror;
 
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
-    logic [7:0] safe_start = 0;
+
 
     /**
      * Signals assignments
@@ -70,9 +69,6 @@ module JumpKing (
         .locked(locked),
         .clk_in1(clk)
     );
-
-    always_ff @(posedge clk_ss)
-    safe_start <= {safe_start[6:0],locked};
 
     // Mirror pclk on a pin for use by the testbench;
     // not functionally required for this design to work.

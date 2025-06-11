@@ -9,33 +9,20 @@
 */
 
 module keyboard_ctl (
-    input  logic clk,
-    input  logic rst,
+    input [15:0] keycode,
+
     output logic key_space,
     output logic key_right,
-    output logic key_left,
-    input logic ps2_clk,
-    input logic ps2_data
+    output logic key_left
 );
 
 timeunit 1ns;
 timeprecision 1ps;
 
-logic [15:0] keycode;
-logic f_EOT;
-
 localparam KEYCODE_SPACE     = 8'h29; 
 localparam KEYCODE_RIGHT     = 8'h23;
 localparam KEYCODE_LEFT      = 8'h1C;
 localparam KEYCODE_RELEASE   = 8'hF0; 
-
-PS2Receiver u_ps2_receiver (
-    .clk(clk),
-    .ps2_clk(ps2_clk),
-    .ps2_data(ps2_data),
-    .keycode(keycode),
-    .oflag(f_EOT)
-);
 
 always_comb begin
 
