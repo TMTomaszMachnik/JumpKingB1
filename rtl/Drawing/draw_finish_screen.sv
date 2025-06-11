@@ -8,13 +8,16 @@
 * Module to handle drawing the starting and finish screen of the game
 */
 
-module draw_finish (
+module draw_finish_screen (
     input logic clk,
     input logic rst,
+
     input logic [1:0] level,
     input logic [11:0] x_value,
     input logic [11:0] y_value,
+
     input logic sync_signal,
+
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -29,8 +32,8 @@ module draw_finish (
      * Parameters for the background image scaling and size to fit the FPGA memoory
      */
 
-    localparam int IMAGE_WIDTH = 64; 
-    localparam int IMAGE_HEIGHT = 48;
+    localparam IMAGE_WIDTH = 64; 
+    localparam IMAGE_HEIGHT = 48;
     localparam MEM_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT;
     localparam SCALE_X = 16;
     localparam SCALE_Y = 16; 
@@ -40,10 +43,10 @@ module draw_finish (
      * 
      */
 
-    localparam int FINISH_X_LEFT = 500;
-    localparam int FINISH_X_RIGHT = 700;
-    localparam int FINISH_Y_UP = 100;
-    localparam int FINISH_Y_DOWN = 112;
+    localparam FINISH_X_LEFT = 500;
+    localparam FINISH_X_RIGHT = 700;
+    localparam FINISH_Y_UP = 100;
+    localparam FINISH_Y_DOWN = 112;
 
     logic [11:0] rgb_nxt;
     logic [11:0] map_start [0:MEM_SIZE-1];
@@ -95,6 +98,7 @@ module draw_finish (
         if (vga_in.vblnk || vga_in.hblnk) begin
             rgb_nxt = 12'h0_0_0;  // Black color during blanking
         end else begin
+
             if((level == 2'b11 && y_value > FINISH_Y_UP && y_value < FINISH_Y_DOWN && x_value > FINISH_X_LEFT && x_value < FINISH_X_RIGHT) || finish) begin
                 rgb_nxt = map_finish[pixel_address];
                 finish_nxt = 1;
@@ -103,9 +107,10 @@ module draw_finish (
             end
             else begin 
                 rgb_nxt = vga_in.rgb;
+            end
+
         end
     end
-end
 endmodule 
 
 

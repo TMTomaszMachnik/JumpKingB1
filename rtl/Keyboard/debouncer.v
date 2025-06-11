@@ -1,5 +1,6 @@
 /*
 * Author: Unknown
+* Company: Digilent
 * 
 * Modified by:
 * * 2025  AGH University of Science and Technology

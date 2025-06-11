@@ -13,10 +13,10 @@
 #                   Project details                   #
 #-----------------------------------------------------#
 # Project name                                  -- EDIT
-set project_name vga_project
+set project_name JumpKing
 
 # Top module name                               -- EDIT
-set top_module top_vga_basys3
+set top_module JumpKing
 
 # FPGA device
 set target xc7a35tcpg236-1
@@ -26,7 +26,7 @@ set target xc7a35tcpg236-1
 #-----------------------------------------------------#
 # Specify .xdc files location                   -- EDIT
 set xdc_files {
-    constraints/top_vga_basys3.xdc \
+    constraints/JumpKing.xdc \
     constraints/clk_wiz_0.xdc
 }
 
@@ -35,17 +35,17 @@ set sv_files {
     ../rtl/VGA_Display/vga_pkg.sv
     ../rtl/VGA_Display/vga_timing.sv
     ../rtl/VGA_Display/vga_if.sv
-    ../rtl/Drawing/draw_bg.sv
-    ../rtl/Drawing/draw_finish.sv
-    ../rtl/Drawing/draw_rect.sv
-    ../rtl/Drawing/draw_char_uart.sv
-    ../rtl/Drawing/draw_rect_ctl.sv  
+    ../rtl/Drawing/draw_background.sv
+    ../rtl/Drawing/draw_finish_screen.sv
+    ../rtl/Drawing/draw_character.sv
+    ../rtl/Drawing/draw_player_UART.sv
     ../rtl/Drawing/character_skin.sv
     ../rtl/Keyboard/keyboard_ctl.sv
     ../rtl/UART/data_tx.sv
     ../rtl/UART/uart_ctl.sv
-    ../rtl/top_vga.sv
-    rtl/top_vga_basys3.sv
+    ../rtl/jump_king_ctl.sv  
+    ../rtl/top_jk.sv
+    rtl/JumpKing.sv
 }
 
 # Specify Verilog design files location         -- EDIT

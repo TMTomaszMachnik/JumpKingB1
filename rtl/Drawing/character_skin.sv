@@ -9,10 +9,12 @@
 */
 
 
-module image_rom (
-    input  logic clk,                               
+module character_skin (
+    input  logic clk,
+
     input  logic [2:0] character_skin, 
-    input  logic [11:0] address,      
+    input  logic [11:0] address,
+
     output logic [11:0] rgb           
 );
 

@@ -8,16 +8,15 @@
 * Game top module connecting all the sub-modules to the clock and together
 */
 
-module top_vga (
+module top_jk (
         input  logic clk,
         input  logic clk100,
         input  logic rst,
-        input  logic sw0,
-        input  logic sync_remote, 
-        input  ps2_clk,
-        input  ps2_data,
 
         output logic sync_local,
+        input  logic sync_remote, 
+        input  logic sw0,
+
         output logic vs,
         output logic hs,
         output logic [3:0] r,
@@ -30,7 +29,10 @@ module top_vga (
 
         output logic tx1,
         output logic tx2,
-        output logic tx3
+        output logic tx3,
+
+        input  ps2_clk,
+        input  ps2_data
     );
 
     timeunit 1ns;
@@ -65,17 +67,16 @@ module top_vga (
     wire [11:0] rgb_pixel;
     wire [11:0] address;
 
-    wire left;
-    wire [15:0] keyboard_data;
-    wire f_EOT;
-
-    wire [2:0] character_skin;
-
     wire key_space;
     wire key_right;
     wire key_left;
 
     wire [1:0] current_level;
+    wire [2:0] character_skin;
+
+    wire [7:0] data_1, data_2, data_3;
+    wire [11:0] rgb_pixel_uart;
+    wire [11:0] address_uart; 
 
     /**
      * Submodules instances
@@ -110,10 +111,6 @@ module top_vga (
         .vga_out(vga_if_bg_uart.out)
     );
 
-    wire [7:0] data_1, data_2, data_3;
-    wire [11:0] rgb_pixel_uart;
-    wire [11:0] address_uart; 
-
     wire dummy_uart;
     assign dummy_uart = 0;
 
@@ -130,7 +127,7 @@ module top_vga (
         .y_value({dummy_uart,data_3[5:0],data_2[7:3]})
     );
 
-    character_skin u_character_skin(
+    character_skin u_character_skin_uart(
         .clk,
         .rgb(rgb_pixel_uart),
         .address(address_uart),
@@ -161,14 +158,14 @@ module top_vga (
         .data_in_2({y_pos[4:0],x_pos[10:8]}),
         .data_out_2(data_2),
         .rx_2(rx2),
-        .tx_2(tx2),`
+        .tx_2(tx2),
         .data_in_3({current_level,y_pos[10:5]}),
         .data_out_3(data_3),
         .rx_3(rx3),
         .tx_3(tx3)
     );
 
-    draw_rect u_draw_rect (
+    draw_character u_draw_character (
         .clk,
         .rst,
         .vga_in(vga_if_ctl_r.in),
@@ -183,7 +180,7 @@ module top_vga (
     assign sync_local = sw0;
     assign sync_signal = sync_remote && sync_local;
 
-    draw_finish u_draw_finish(
+    draw_finish_screen u_draw_finish(
         .clk,
         .rst,
         .vga_in(vga_if_r_fin.in),

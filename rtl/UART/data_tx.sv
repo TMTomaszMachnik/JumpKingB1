@@ -30,6 +30,11 @@ module data_tx (
     output logic        wr_uart_3
 );
 
+
+localparam BYTE_1 = 8'b01000110;    // Default values corresponding to start x,y values and default level
+localparam BYTE_2 = 8'b00001000;
+localparam BYTE_3 = 8'b00010100;
+
     /**
      * Registers to hold next state values for data and write signals
      */
@@ -48,11 +53,11 @@ logic wr_uart_nxt_3;
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        w_data_1 <= 8'b01000110;    // Default values corresponding to start x,y values and default level
+        w_data_1 <= BYTE_1;    
         wr_uart_1 <= 1'b0;
-        w_data_2 <= 8'b00001000;
+        w_data_2 <= BYTE_2;
         wr_uart_2 <= 1'b0;
-        w_data_3 <= 8'b0010100;
+        w_data_3 <= BYTE_3;
         wr_uart_3 <= 1'b0;
 
     end else begin

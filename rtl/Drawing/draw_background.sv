@@ -5,13 +5,15 @@
 * Miłosz Płonczyński and Tomasz Machnik 
 *
 * Description:
-* Module to handle keyboard debouncing
+* Module to draw background image
 */
 
-module draw_bg (
+module draw_background (
     input logic clk,
     input logic rst,
+
     input logic [1:0] level,
+
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -19,7 +21,7 @@ module draw_bg (
     timeunit 1ns;
     timeprecision 1ps;
 
-    import vga_pkg::*;                                  // Package with important VGA display constants
+    import vga_pkg::*;   // Package with important VGA display constants
 
 
     /**

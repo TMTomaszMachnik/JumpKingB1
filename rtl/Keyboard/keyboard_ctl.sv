@@ -24,10 +24,10 @@ timeprecision 1ps;
 logic [15:0] keycode;
 logic f_EOT;
 
-localparam int KEYCODE_SPACE = 8'h29; 
-localparam int KEYCODE_RIGHT = 8'h23;
-localparam int KEYCODE_LEFT  = 8'h1C;
-localparam int KEYCODE_RELEASE   = 8'hF0; 
+localparam KEYCODE_SPACE     = 8'h29; 
+localparam KEYCODE_RIGHT     = 8'h23;
+localparam KEYCODE_LEFT      = 8'h1C;
+localparam KEYCODE_RELEASE   = 8'hF0; 
 
 PS2Receiver u_ps2_receiver (
     .clk(clk),

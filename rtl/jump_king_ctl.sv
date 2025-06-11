@@ -17,13 +17,17 @@
  module jump_king_ctl (
     input logic clk,
     input logic rst,
+
     input logic key_space,
     input logic key_right,
     input logic key_left,
+
     output logic [11:0] value_x,
     output logic [11:0] value_y,
+    
     output logic [2:0] character_skin,
     output logic [1:0] level,
+
     vga_if.in vga_in,
     vga_if.out vga_out
 );
@@ -53,8 +57,8 @@ localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 localparam OFFSET = 12'd10;
 localparam MAX_LEVEL = 4;
-localparam y_start = VER_PIXELS - REC_HEIGHT - 64; 
-localparam x_start = 12'd70; 
+localparam Y_START = VER_PIXELS - REC_HEIGHT - 64; 
+localparam X_START = 12'd70; 
 
 /**
  *  Registers and logic variables for the control module and jump/movement physics
@@ -66,6 +70,7 @@ logic [31:0] counter;
 logic [31:0] counter_nxt;
 logic [31:0] counter_sd;
 logic [31:0] counter_sd_nxt;
+
 logic [11:0] value_x_nxt;
 logic [11:0] value_y_nxt;
 logic [11:0] y_pos; 
@@ -84,6 +89,7 @@ logic top_reached;
 */
 
 logic signed [11:0] value_y_temp;
+logic signed [11:0] value_y_temp_nxt;
 logic [5:0] fall_bottom;
 logic [5:0] fall_bottom_nxt;
 logic [1:0] level_nxt;
@@ -197,9 +203,10 @@ always_ff @(posedge clk) begin : out_reg_blk
     if (rst) begin : out_reg_rst_blk
         vel_time        <= '0;
         counter         <= '0;
-        value_x         <= x_start;
-        value_y         <= y_start;
-        y_pos           <= y_start;
+        value_x         <= X_START;
+        value_y         <= Y_START;
+        y_pos           <= Y_START;
+        value_y_temp    <= '0;
         character_skin  <= MICRO_IDLE; 
         jump_vel        <= VELOCITY; 
         counter_sd      <= '0;
@@ -208,7 +215,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         collision_right <= 1'b0;
         collision_bot   <= 1'b1;
         collision_top   <= 1'b0;
-        fall_bottom     <= y_start;
+        fall_bottom     <= Y_START;
     end else begin : out_reg_run_blk
         vel_time        <= vel_time_nxt;
         counter         <= counter_nxt;
@@ -216,6 +223,7 @@ always_ff @(posedge clk) begin : out_reg_blk
         value_y         <= value_y_nxt;
         character_skin  <= character_skin_nxt;
         y_pos           <= y_pos_nxt;
+        value_y_temp    <= value_y_temp_nxt;
         jump_vel        <= jump_vel_nxt;
         counter_sd      <= counter_sd_nxt;
         level           <= level_nxt;
@@ -251,7 +259,7 @@ end
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        y_jump_start <= y_start;
+        y_jump_start <= Y_START;
     end else begin
         y_jump_start <= y_jump_start_nxt;
     end
@@ -296,6 +304,7 @@ always_comb begin : out_comb_blk
     facing_nxt = facing;
     level_nxt = level;
     fall_bottom_nxt = fall_bottom;
+    value_y_temp_nxt = '0; 
 
     collision_left_nxt = collision_left;
     collision_right_nxt = collision_right;
@@ -345,6 +354,7 @@ always_comb begin : out_comb_blk
         facing_nxt = facing; 
     end
 
+
     case(state)
         IDLE: begin
             top_reached = 1'b0;
@@ -354,11 +364,11 @@ always_comb begin : out_comb_blk
             value_y_nxt = value_y;
             y_pos_nxt = value_y;
             y_jump_start_nxt = y_jump_start;
-            vel_time_nxt = vel_time;
+            vel_time_nxt = '0;
             jump_vel_nxt = VELOCITY;
             character_skin_nxt = MICRO_IDLE;
 
-            if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 2)) begin // bot whole
+            if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 2)) begin // pillow after jump
                 if(vga_in.rgb == 12'h2_B_4) begin
                     value_y_nxt = value_y - 6;
                 end
@@ -386,25 +396,29 @@ always_comb begin : out_comb_blk
         JUMP: begin
             character_skin_nxt = MICRO_JUMP;
 
+            //  Calculate the next vertical position based on the jump physics
+
+            value_y_temp_nxt = y_jump_start + ((A * vel_time * vel_time) / (2 * DIV)) - (jump_vel * vel_time);
+            if (value_y_temp_nxt > VER_PIXELS) begin
+                value_y_temp_nxt = VER_PIXELS;
+            end else if (value_y_temp_nxt < 0) begin
+                value_y_temp_nxt = 0;
+            end
+
             //  Vertical movement logic during JUMP state
 
             if(counter == 3*CTR_MAX && value_y > 5) begin
                 counter_nxt = 0;
                 vel_time_nxt = vel_time + 1;
-                value_y_temp = y_jump_start + ((A * vel_time * vel_time) / (2 * DIV)) - (jump_vel * vel_time);
-                if (value_y_temp > VER_PIXELS) begin
-                    value_y_temp = VER_PIXELS;
-                end else if (value_y_temp < 0) begin
-                    value_y_temp = 0;
-                end
-                
+        
                 value_y_nxt = value_y_temp;
                 y_pos_nxt   = value_y_temp;
 
                 if((A * vel_time) >= (VELOCITY * DIV)) begin
-                    vel_time_nxt = 0;
-                    top_reached = 1;
+                        vel_time_nxt = 0;
+                        top_reached = 1;
                 end
+
             end else if (value_y <= 5) begin  
                     if (level < MAX_LEVEL) begin
                         level_nxt = level + 1;        
@@ -421,7 +435,7 @@ always_comb begin : out_comb_blk
 
             //  Horizontal movement logic during JUMP state
 
-            if(counter_sd == CTR_MAX && value_x >= x_start && value_x <= HOR_PIXELS - REC_WIDTH - 1) begin 
+            if(counter_sd == CTR_MAX) begin 
                 counter_sd_nxt = 0;
 
                 if(facing_nxt) begin
@@ -437,19 +451,21 @@ always_comb begin : out_comb_blk
         FALLING: begin
             character_skin_nxt = MICRO_JUMP;
 
+            //  Calculate the next vertical position based on the falling physics
+
+            value_y_temp_nxt = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
+            if (value_y_temp_nxt > VER_PIXELS) begin
+                value_y_temp_nxt = VER_PIXELS;
+            end else if (value_y_temp_nxt < 0) begin
+                value_y_temp_nxt = 0;
+            end
+            
             //  Vertical movement logic during FALLING state
 
             if (counter == 3 * CTR_MAX) begin
                 counter_nxt = 0;    
                 vel_time_nxt = vel_time + 1;
-                
-                value_y_temp = y_pos + ((A * vel_time * vel_time) / (2 * DIV));
-                if (value_y_temp > VER_PIXELS) begin
-                    value_y_temp = VER_PIXELS;
-                end else if (value_y_temp < 0) begin
-                    value_y_temp = 0;
-                end
-                
+                    
                 value_y_nxt = value_y_temp;
                 y_pos_nxt   = value_y_temp;
 
@@ -461,14 +477,16 @@ always_comb begin : out_comb_blk
                     y_jump_start_nxt = y_pos;
                 end
             end else if (value_y >= VER_PIXELS - 5) begin
-                    if (level > 0) begin
-                        level_nxt = level - 1;
-                        value_y_nxt = 10;
-                        y_pos_nxt = value_y_nxt;
-                        fall_bottom_nxt = VER_PIXELS;
-                    end else begin
-                        fall_bottom_nxt = y_start;
+
+                if (level > 0) begin
+                    level_nxt = level - 1;
+                    value_y_nxt = 10;
+                    y_pos_nxt = value_y_nxt;
+                    fall_bottom_nxt = VER_PIXELS;
+                end else begin
+                    fall_bottom_nxt = Y_START;
                 end
+
             end else begin
                 counter_nxt = counter + 1;
                 y_jump_start_nxt = y_jump_start;
@@ -476,7 +494,7 @@ always_comb begin : out_comb_blk
             
             //  Horizontal movement logic during JUMP state
             
-            if (counter_sd == CTR_MAX && value_x >= x_start) begin
+            if (counter_sd == CTR_MAX) begin
                 counter_sd_nxt = 0;
                 
                 if (facing_nxt) begin
@@ -527,4 +545,5 @@ always_comb begin : out_comb_blk
         end
     endcase
 end
+
 endmodule

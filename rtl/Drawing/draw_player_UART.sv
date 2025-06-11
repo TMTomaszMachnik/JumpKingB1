@@ -8,12 +8,15 @@
 * Module to handle drawing character of the other player on the VGA display using UART data input.
 */
 
-module draw_char_uart (
+module draw_player_UART (
     input  logic         clk,
     input  logic         rst,
+
     input  logic [11:0]  rgb_pixel,
+
     input  logic [11:0]  x_value,
     input  logic [11:0]  y_value,
+
     input  logic [1:0]   level_home,
     input  logic [1:0]   level_remote,
 

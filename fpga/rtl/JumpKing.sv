@@ -12,7 +12,7 @@
  * Top level synthesizable module including the project top and all the FPGA-referred modules.
  */
 
-module top_vga_basys3 (
+module JumpKing (
         input  wire clk,                     // Synchronnous reset and clock
         input  wire btnC,
 
@@ -92,7 +92,7 @@ module top_vga_basys3 (
      *  Project functional top module
      */
 
-    top_vga u_top_vga (                 // Top module instantiation
+    top_jk u_top_jk (                 // Top module instantiation
         .clk(clk_65),
         .clk100(clk_100),
         .rst(btnC),

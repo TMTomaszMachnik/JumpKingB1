@@ -1,3 +1,13 @@
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle drawing character on the VGA display based on the character physics.
+*/
+
 module draw_character (
     input  logic clk,
     input  logic rst,
@@ -6,11 +16,10 @@ module draw_character (
     input  logic  [11:0]  x_value,
     input  logic  [11:0]  y_value,
 
+    output logic [11:0] pixel_addr,
+
     vga_if.in vga_in,
-
-    vga_if.out vga_out,
-
-    output logic [11:0] pixel_addr
+    vga_if.out vga_out
 );
 
 timeunit 1ns;
