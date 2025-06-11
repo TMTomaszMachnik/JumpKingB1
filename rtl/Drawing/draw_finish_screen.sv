@@ -39,8 +39,8 @@ module draw_finish_screen (
     localparam IMAGE_WIDTH = 64; 
     localparam IMAGE_HEIGHT = 48;
     localparam MEM_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT;
-    localparam SCALE_X = 16;
-    localparam SCALE_Y = 16; 
+    localparam SCALE_X = 4;
+    localparam SCALE_Y = 4; 
 
     /**
      * Parameters for the finish area coordinates
@@ -48,9 +48,9 @@ module draw_finish_screen (
      */
 
     localparam FINISH_X_LEFT = 500;
-    localparam FINISH_X_RIGHT = 700;
-    localparam FINISH_Y_UP = 100;
-    localparam FINISH_Y_DOWN = 112;
+    localparam FINISH_X_RIGHT = 628;
+    localparam FINISH_Y_UP = 20;
+    localparam FINISH_Y_DOWN = 106;
 
     logic [11:0] rgb_nxt;
     logic [11:0] map_start [0:MEM_SIZE-1];
@@ -91,13 +91,13 @@ module draw_finish_screen (
     initial begin
         $readmemh("../../rtl/Graphics/map_start.data", map_start);
         $readmemh("../../rtl/Graphics/map_win.data", map_win);
-        $readmemh("../../rtl/Graphics/map_lose.data", map_win);
+        $readmemh("../../rtl/Graphics/map_lose.data", map_lose);
     end
 
 
     always_comb begin
-        scaled_hcount = vga_in.hcount / SCALE_X;
-        scaled_vcount = vga_in.vcount / SCALE_Y;
+        scaled_hcount = vga_in.hcount >> SCALE_X;
+        scaled_vcount = vga_in.vcount >> SCALE_Y;
         pixel_address = (scaled_vcount * IMAGE_WIDTH) + scaled_hcount;
     end
 
@@ -114,7 +114,7 @@ module draw_finish_screen (
                 win_nxt = 1;
             end else if((level_rm == 2'b11 && y_value_rm > FINISH_Y_UP && y_value_rm < FINISH_Y_DOWN && x_value_rm > FINISH_X_LEFT && x_value_rm < FINISH_X_RIGHT) || lose) begin
                 rgb_nxt = map_lose[pixel_address];
-                win_nxt = 1;
+                lose_nxt = 1;
             end
             else if (level == 2'b00 && !sync_signal) begin
                 rgb_nxt = map_start[pixel_address];

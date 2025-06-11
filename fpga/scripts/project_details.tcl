@@ -35,7 +35,10 @@ set sv_files {
     ../rtl/VGA_Display/vga_pkg.sv
     ../rtl/VGA_Display/vga_timing.sv
     ../rtl/VGA_Display/vga_if.sv
+    ../rtl/VGA_Display/vga_init_if.sv
     ../rtl/Drawing/draw_background.sv
+    ../rtl/Drawing/draw_crown.sv
+    ../rtl/Drawing/crown_rom.sv
     ../rtl/Drawing/draw_finish_screen.sv
     ../rtl/Drawing/draw_character.sv
     ../rtl/Drawing/draw_player_UART.sv
@@ -77,9 +80,11 @@ set mem_files {
   ../rtl/Graphics/bg2.data
   ../rtl/Graphics/bg3.data
   ../rtl/Graphics/map_start.data
-  ../rtl/Graphics/map_finish.data
+  ../rtl/Graphics/map_win.data
+  ../rtl/Graphics/map_lose.data
   ../rtl/Graphics/micro_curled.data
   ../rtl/Graphics/micro_jump.data
   ../rtl/Graphics/micro_left.data
   ../rtl/Graphics/micro_right.data
+  ../rtl/Graphics/crown.data
 }

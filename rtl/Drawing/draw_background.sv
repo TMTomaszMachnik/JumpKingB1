@@ -28,8 +28,8 @@ module draw_background (
      * Parameters for the background image scaling and size to fit the FPGA memoory
      */
 
-    localparam int IMAGE_WIDTH = 64;                    
-    localparam int IMAGE_HEIGHT = 48;                  
+    localparam IMAGE_WIDTH = 64;                    
+    localparam IMAGE_HEIGHT = 48;                  
     localparam MEM_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT;
     localparam SCALE_X = 16;
     localparam SCALE_Y = 16; 

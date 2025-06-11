@@ -407,7 +407,7 @@ always_comb begin : out_comb_blk
 
             //  Vertical movement logic during JUMP state
 
-            if(counter == 3*CTR_MAX && value_y > 5) begin
+            if(counter == 4*CTR_MAX && value_y > 5) begin
                 counter_nxt = 0;
                 vel_time_nxt = vel_time + 1;
         
@@ -462,7 +462,7 @@ always_comb begin : out_comb_blk
             
             //  Vertical movement logic during FALLING state
 
-            if (counter == 3 * CTR_MAX) begin
+            if (counter == 4 * CTR_MAX) begin
                 counter_nxt = 0;    
                 vel_time_nxt = vel_time + 1;
                     

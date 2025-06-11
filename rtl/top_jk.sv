@@ -46,7 +46,8 @@ module top_jk (
     vga_if          vga_if_bg_uart();
     vga_if          vga_if_uart_ctl();
     vga_if          vga_if_ctl_r();
-    vga_if          vga_if_r_fin();
+    vga_if          vga_if_r_crown();
+    vga_if          vga_if_crown_fin();
     vga_if          vga_if_fin_out();
 
      
@@ -78,6 +79,8 @@ module top_jk (
     wire [11:0] rgb_pixel_uart;
     wire [11:0] address_uart; 
 
+    wire [11:0] rgb_pixel_crown;
+    wire [11:0] address_crown; 
     /**
      * Submodules instances
      */
@@ -169,11 +172,21 @@ module top_jk (
         .clk,
         .rst,
         .vga_in(vga_if_ctl_r.in),
-        .vga_out(vga_if_r_fin.out),
+        .vga_out(vga_if_r_crown.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),
         .x_value(x_pos),
         .y_value(y_pos)
+    );
+
+    draw_crown u_draw_crown (
+        .clk,
+        .rst,
+        .vga_in(vga_if_r_crown.in),
+        .vga_out(vga_if_crown_fin.out),
+        .pixel_addr(address_crown),
+        .rgb_pixel(rgb_pixel_crown),
+        .level(current_level) 
     );
 
     wire sync_signal;
@@ -183,7 +196,7 @@ module top_jk (
     draw_finish_screen u_draw_finish(
         .clk,
         .rst,
-        .vga_in(vga_if_r_fin.in),
+        .vga_in(vga_if_crown_fin.in),
         .vga_out(vga_if_fin_out.out),
         .level(current_level),
         .x_value(x_pos),
@@ -201,4 +214,9 @@ module top_jk (
         .character_skin(character_skin)
     );
 
+    crown_rom u_crown_rom(
+        .clk,
+        .rgb(rgb_pixel_crown),
+        .address(address_crown)
+    );
 endmodule

@@ -5,25 +5,19 @@
 * Miłosz Płonczyński and Tomasz Machnik 
 *
 * Description:
-* Module to handle drawing character of the other player on the VGA display using UART data input.
+* Module to handle drawing character on the VGA display based on the character physics.
 */
 
-module draw_player_UART (
-    input  logic         clk,
-    input  logic         rst,
+module draw_crown (
+    input  logic clk,
+    input  logic rst,
 
-    input  logic [11:0]  rgb_pixel,
-
-    input  logic [11:0]  x_value,
-    input  logic [11:0]  y_value,
-
-    input  logic [1:0]   level_home,
-    input  logic [1:0]   level_remote,
-
-    output logic [11:0]  pixel_addr,
+    input logic [11:0]  rgb_pixel,
+    output logic [11:0] pixel_addr,
 
     vga_if.in vga_in,
-    vga_if.out vga_out
+    vga_if.out vga_out,
+    input logic [1:0] level
 );
 
 timeunit 1ns;
@@ -31,15 +25,16 @@ timeprecision 1ps;
 
 import vga_pkg::*;
 
-localparam REC_WIDTH = 47;
-localparam REC_HEIGHT = 63;
-localparam C_DELAY_LEN = 3;
+localparam FINISH_X_LEFT = 500;
+localparam FINISH_Y_UP = 100;
+localparam MAX_LEVEL = 4; 
+localparam IMAGE_WIDTH = 64;                    
+localparam IMAGE_HEIGHT = 48; 
+
 
 logic [11:0] rgb_nxt;
 
-/**
- * Buffers to hold VGA signals for delay
-*/
+localparam C_DELAY_LEN = 3;
 
 logic [C_DELAY_LEN-1:0][10:0] hcount_buf;
 logic [C_DELAY_LEN-1:0][10:0] vcount_buf;
@@ -48,11 +43,6 @@ logic [C_DELAY_LEN-1:0]  vsync_buf;
 logic [C_DELAY_LEN-1:0]  hblnk_buf;
 logic [C_DELAY_LEN-1:0]  vblnk_buf;
 logic [C_DELAY_LEN-1:0][11:0]  rgb_buf;
-
-
-/**
- * Sequentional and combinational logic to handle the VGA signals and draw the character
-*/
 
 always_ff @(posedge clk) begin
     if (rst) begin
@@ -96,23 +86,25 @@ always_ff @(posedge clk) begin : rec_ff_blk
     end
 end
 
-always_comb begin : bg_comb_blk    
+
+always_comb begin : bg_comb_blk
     rgb_nxt = rgb_buf[C_DELAY_LEN-1];
     pixel_addr = '0;
 
-    if(level_home == level_remote) begin
-        if ((vcount_buf[C_DELAY_LEN-1] >= y_value) && 
-            (vcount_buf[C_DELAY_LEN-1] < (y_value + REC_HEIGHT)) &&
-            (hcount_buf[C_DELAY_LEN-1] >= x_value) && 
-            (hcount_buf[C_DELAY_LEN-1] < (x_value + REC_WIDTH))) begin
+    if(level == (MAX_LEVEL - 1)) begin
+        if ((vcount_buf[C_DELAY_LEN-1] >= FINISH_Y_UP) && 
+            (vcount_buf[C_DELAY_LEN-1] < (FINISH_Y_UP + IMAGE_HEIGHT)) &&
+            (hcount_buf[C_DELAY_LEN-1] >= FINISH_X_LEFT) && 
+            (hcount_buf[C_DELAY_LEN-1] < (FINISH_X_LEFT + IMAGE_WIDTH))) begin
             
-            pixel_addr = (vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1) + 
-                        (hcount_buf[C_DELAY_LEN-1] - x_value);
+            pixel_addr = ((vcount_buf[C_DELAY_LEN-1] - FINISH_Y_UP) * IMAGE_WIDTH) + 
+                          (hcount_buf[C_DELAY_LEN-1] - FINISH_X_LEFT);
             
             if (rgb_pixel != 12'hF_A_C) begin
-                rgb_nxt = rgb_pixel + 1234;
+                rgb_nxt = rgb_pixel;
             end
         end
+    end else begin
     end
 end
 
