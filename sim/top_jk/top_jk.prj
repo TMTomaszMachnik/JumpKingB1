@@ -1,0 +1,45 @@
+# Copyright (C) 2025  AGH University of Science and Technology
+# MTM UEC2
+# Author: Piotr Kaczmarczyk
+#
+# Description:
+# List of files defining the modules used during the test.
+# Specify the file paths relative to THIS file.
+# For syntax detail see AMD Xilinx UG 900:
+# https://docs.xilinx.com/r/en-US/ug900-vivado-logic-simulation/Project-File-.prj-Syntax
+
+
+sv work ../../rtl/VGA_Display/vga_pkg.sv \
+        ../../rtl/VGA_Display/vga_timing.sv \
+        ../../rtl/VGA_Display/vga_if.sv \
+        ../../rtl/VGA_Display/vga_init_if.sv \
+        ../../rtl/Drawing/draw_background.sv \
+        ../../rtl/Drawing/draw_crown.sv \
+        ../../rtl/Drawing/crown_rom.sv \
+        ../../rtl/Drawing/draw_finish_screen.sv \
+        ../../rtl/Drawing/draw_character.sv \
+        ../../rtl/Drawing/draw_player_UART.sv \
+        ../../rtl/Drawing/character_skin.sv \
+        ../../rtl/Keyboard/keyboard_ctl.sv \
+        ../../rtl/UART/data_tx.sv \
+        ../../rtl/UART/uart_ctl.sv \
+        ../../rtl/jump_king_ctl.sv \
+        ../../rtl/top_jk.sv \
+        ../common/tiff_writer.sv \
+        top_jk_tb.sv
+
+verilog work ../common/glbl.v \
+             ../../fpga/rtl/clk_wiz_0.v \
+             ../../fpga/rtl/clk_wiz_0_clk_wiz.v \
+             ../../rtl/Keyboard/PS2Receiver.v \
+             ../../rtl/Keyboard/debouncer.v \
+             ../../rtl/UART/uart.v \
+             ../../rtl/UART/mod_m_counter.v \
+             ../../rtl/UART/uart_rx.v \
+             ../../rtl/UART/uart_tx.v \
+             ../../rtl/UART/fifo.v 
+
+
+#vhdl work ../../rtl/mouse_ctrl/MouseCtl.vhd \
+#          ../../rtl/mouse_ctrl/MouseDisplay.vhd \
+#          ../../rtl/mouse_ctrl/Ps2Interface.vhd

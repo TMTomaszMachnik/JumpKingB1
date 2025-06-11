@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module draw_rect_ctl_tb;
+module jump_king_ctl_tb;
 
     // Parameters
 
@@ -26,7 +26,7 @@ module draw_rect_ctl_tb;
     vga_if vga_out();
 
     // Instantiate the Unit Under Test (UUT)
-    draw_rect_ctl uut (
+    jump_king_ctl uut (
         .clk(clk),
         .rst(reset),
         .key_space(key_space),
@@ -34,7 +34,7 @@ module draw_rect_ctl_tb;
         .key_right(key_right),
         .value_x(value_x),
         .value_y(value_y),
-        .character_state(character_state),
+        .character_skin(character_state),
         .level(level),
         .vga_in(vga_in),
         .vga_out(vga_out)
@@ -70,7 +70,6 @@ module draw_rect_ctl_tb;
 
     // Test sequence
     initial begin
-        // Initialize inputs
         clk = 0;
         reset = 1;
         key_space = 0;
@@ -97,7 +96,7 @@ module draw_rect_ctl_tb;
         #20000;
         
 
-               // Test RIGHT movement
+        // Test RIGHT movement
         $display("Testing RIGHT movement");
         key_right = 1;
         #1000;
@@ -125,9 +124,6 @@ module draw_rect_ctl_tb;
         // Test collision with platform
         $display("Testing platform collision");
         
-        // Position character below platform
-        // (This would require forcing internal signals or adding testbench hooks)
-        // For now we'll just jump toward the platform
         key_space = 1;
         #20;
         key_space = 0;
@@ -141,7 +137,7 @@ module draw_rect_ctl_tb;
 
     // Monitor the outputs
     always @(posedge clk) begin
-        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, jump_power = %d, level = %b, y_jump_start= %d, vel_time = %d, fall_bottom = %d, bottom_collision = %d , right_collision = %d",
+        $display("Level: %b,Time: %t, X: %3d, Y: %3d, State: %s->%s,key_space = %b, key_left = %b, key_right = %b, jump_power = %d, level = %b, y_jump_start= %d, vel_time = %d, bottom_collision = %d , right_collision = %d",
                 uut.level,
                 $time, 
                 value_x, 
@@ -155,19 +151,13 @@ module draw_rect_ctl_tb;
                 uut.level,
                 uut.y_jump_start,
                 uut.vel_time,
-                uut.fall_bottom,
                 uut.collision_bot,
                 uut.collision_right
                 );
         
-        // Add assertions to verify behavior
-        // X position should stay within bounds
         assert(value_x >= 0 && value_x <= SCREEN_WIDTH - REC_WIDTH - 1);
-        
-        // Y position should stay within bounds
         assert(value_y >= 0 && value_y <= SCREEN_HEIGHT);
     end
-    // Add this to your testbench to monitor states
     always @(posedge clk) begin
         if (uut.state != uut.state_nxt) begin
             $display("State change: %s -> %s at time %t", 

@@ -5,7 +5,7 @@
 * Miłosz Płonczyński and Tomasz Machnik 
 *
 * Description:
-* Module to handle drawing character on the VGA display based on the character physics.
+* Module to handle drawing the crown on the top 
 */
 
 module draw_crown (

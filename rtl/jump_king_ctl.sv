@@ -312,7 +312,7 @@ always_comb begin : out_comb_blk
 */
 
     if(vga_in.hcount == value_x && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // left
-        if(vga_in.rgb == 12'h2_B_4) begin
+        if(vga_in.rgb == 12'hF_C_0) begin
             collision_left_nxt = '1;
         end else begin
             collision_left_nxt = '0;
@@ -320,21 +320,21 @@ always_comb begin : out_comb_blk
 
     end 
     if(vga_in.hcount == (value_x + REC_WIDTH - 1) && vga_in.vcount >= (value_y + OFFSET) && vga_in.vcount <= (value_y + (REC_HEIGHT) - OFFSET)) begin // right
-        if(vga_in.rgb == 12'h2_B_4) begin
+        if(vga_in.rgb == 12'hF_C_0) begin
             collision_right_nxt = '1;
         end else begin
             collision_right_nxt = '0;
         end 
     end
     if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT + 5)) begin // bot whole
-        if(vga_in.rgb == 12'h2_B_4) begin
+        if(vga_in.rgb == 12'hF_C_0) begin
             collision_bot_nxt = '1;
         end else begin
             collision_bot_nxt = '0;
         end 
     end 
     if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == value_y) begin // top whole
-        if(vga_in.rgb == 12'h2_B_4) begin
+        if(vga_in.rgb == 12'hF_C_0) begin
             collision_top_nxt = '1;
         end else begin
             collision_top_nxt = '0;
@@ -364,7 +364,7 @@ always_comb begin : out_comb_blk
             character_skin_nxt = MICRO_IDLE;
 
             if (vga_in.hcount >= (value_x + OFFSET) && vga_in.hcount <= (value_x + REC_WIDTH - OFFSET) && vga_in.vcount == (value_y + REC_HEIGHT - 2)) begin // pillow after jump
-                if(vga_in.rgb == 12'h2_B_4) begin
+                if(vga_in.rgb == 12'hF_C_0) begin
                     value_y_nxt = value_y - 6;
                 end
             end

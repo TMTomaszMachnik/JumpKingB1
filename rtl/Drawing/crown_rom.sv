@@ -1,27 +1,26 @@
- module crown_rom (
+/*
+* Authors:
+* * 2025  AGH University of Science and Technology
+* MTM UEC2 Final Project
+* Miłosz Płonczyński and Tomasz Machnik 
+*
+* Description:
+* Module to handle drawing the crown on the top 
+*/
+
+module crown_rom (
     input  logic clk ,
     input  logic [11:0] address,
     output logic [11:0] rgb
 );
 
-
 /**
- * Local variables and signals
+ * Local variables and internal logic
  */
 
 reg [11:0] crown_rom [0:3071];
-
-/**
- * Memory initialization from a file
- */
-
-/* Relative path from the simulation or synthesis working directory */
 initial $readmemh("../../rtl/Graphics/crown.data", crown_rom);
 
-
-/**
- * Internal logic
- */
 
 always_ff @(posedge clk)
    rgb <= crown_rom[address];

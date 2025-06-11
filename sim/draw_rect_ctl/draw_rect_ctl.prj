@@ -1,4 +1,0 @@
-sv work ../../rtl/vga_pkg.sv \
-        ../../rtl/draw_rect_ctl.sv \
-        ../../rtl/vga_if.sv \
-        draw_rect_ctl_tb.sv
