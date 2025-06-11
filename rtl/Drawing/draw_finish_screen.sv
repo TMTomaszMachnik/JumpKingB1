@@ -16,6 +16,10 @@ module draw_finish_screen (
     input logic [11:0] x_value,
     input logic [11:0] y_value,
 
+    input logic [1:0] level_rm,
+    input logic [11:0] x_value_rm,
+    input logic [11:0] y_value_rm, 
+
     input logic sync_signal,
 
     vga_if.in vga_in,
@@ -50,11 +54,14 @@ module draw_finish_screen (
 
     logic [11:0] rgb_nxt;
     logic [11:0] map_start [0:MEM_SIZE-1];
-    logic [11:0] map_finish [0:MEM_SIZE-1];
+    logic [11:0] map_win [0:MEM_SIZE-1];
+    logic [11:0] map_lose [0:MEM_SIZE-1];
     logic [11:0] scaled_hcount, scaled_vcount;
     logic [11:0] pixel_address;
-    logic finish;
-    logic finish_nxt;
+    logic win;
+    logic win_nxt;
+    logic lose;
+    logic lose_nxt;
 
 
     always_ff @(posedge clk) begin : bg_ff_blk
@@ -66,7 +73,8 @@ module draw_finish_screen (
             vga_out.hsync  <= '0;
             vga_out.hblnk  <= '0;
             vga_out.rgb    <= '0;
-            finish         <= '0;
+            win            <= '0;
+            lose          <= '0;
         end else begin
             vga_out.vcount <= vga_in.vcount;
             vga_out.vsync  <= vga_in.vsync;
@@ -75,15 +83,16 @@ module draw_finish_screen (
             vga_out.hsync  <= vga_in.hsync;
             vga_out.hblnk  <= vga_in.hblnk;
             vga_out.rgb    <= rgb_nxt;
-            finish         <= finish_nxt;
+            win            <= win_nxt;
+            lose          <= lose_nxt;
         end
     end
 
     initial begin
         $readmemh("../../rtl/Graphics/map_start.data", map_start);
-        $readmemh("../../rtl/Graphics/map_finish.data", map_finish);
+        $readmemh("../../rtl/Graphics/map_win.data", map_win);
+        $readmemh("../../rtl/Graphics/map_lose.data", map_win);
     end
-
 
 
     always_comb begin
@@ -93,16 +102,21 @@ module draw_finish_screen (
     end
 
     always_comb begin
-        finish_nxt = finish;
+        win_nxt = win;
+        lose_nxt = lose;
 
         if (vga_in.vblnk || vga_in.hblnk) begin
             rgb_nxt = 12'h0_0_0;  // Black color during blanking
         end else begin
 
-            if((level == 2'b11 && y_value > FINISH_Y_UP && y_value < FINISH_Y_DOWN && x_value > FINISH_X_LEFT && x_value < FINISH_X_RIGHT) || finish) begin
-                rgb_nxt = map_finish[pixel_address];
-                finish_nxt = 1;
-            end else if (level == 2'b00 && !sync_signal) begin
+            if((level == 2'b11 && y_value > FINISH_Y_UP && y_value < FINISH_Y_DOWN && x_value > FINISH_X_LEFT && x_value < FINISH_X_RIGHT) || win) begin
+                rgb_nxt = map_win[pixel_address];
+                win_nxt = 1;
+            end else if((level_rm == 2'b11 && y_value_rm > FINISH_Y_UP && y_value_rm < FINISH_Y_DOWN && x_value_rm > FINISH_X_LEFT && x_value_rm < FINISH_X_RIGHT) || lose) begin
+                rgb_nxt = map_lose[pixel_address];
+                win_nxt = 1;
+            end
+            else if (level == 2'b00 && !sync_signal) begin
                 rgb_nxt = map_start[pixel_address];
             end
             else begin 

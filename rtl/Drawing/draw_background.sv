@@ -14,7 +14,7 @@ module draw_background (
 
     input logic [1:0] level,
 
-    vga_if.in vga_in,
+    vga_init_if.in vga_in,
     vga_if.out vga_out
 );
 

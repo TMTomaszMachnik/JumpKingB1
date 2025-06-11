@@ -42,12 +42,12 @@ module top_jk (
     * Module interfaces
     */
 
-    vga_if vga_if_t_bg();
-    vga_if vga_if_bg_uart();
-    vga_if vga_if_uart_ctl();
-    vga_if vga_if_ctl_r();
-    vga_if vga_if_r_fin();
-    vga_if vga_if_fin_out();
+    vga_init_if     vga_if_t_bg();
+    vga_if          vga_if_bg_uart();
+    vga_if          vga_if_uart_ctl();
+    vga_if          vga_if_ctl_r();
+    vga_if          vga_if_r_fin();
+    vga_if          vga_if_fin_out();
 
      
     /**
@@ -188,6 +188,9 @@ module top_jk (
         .level(current_level),
         .x_value(x_pos),
         .y_value(y_pos),
+        .level_rm(data_3[7:6]),
+        .x_value_rm({dummy_uart,data_2[2:0],data_1}),
+        .y_value_rm({dummy_uart,data_3[5:0],data_2[7:3]}),
         .sync_signal(sync_signal)
     );
 
