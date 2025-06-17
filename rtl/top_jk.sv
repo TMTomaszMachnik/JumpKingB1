@@ -11,6 +11,7 @@
 module top_jk (
         input  logic clk,
         input  logic clk100,
+        input  logic clk6,
         input  logic rst,
 
         output logic sync_local,
@@ -44,8 +45,7 @@ module top_jk (
 
     vga_init_if     vga_if_t_bg();
     vga_if          vga_if_bg_uart();
-    vga_if          vga_if_uart_ctl();
-    vga_if          vga_if_ctl_r();
+    vga_if          vga_if_uart_r();
     vga_if          vga_if_r_crown();
     vga_if          vga_if_crown_fin();
     vga_if          vga_if_fin_out();
@@ -89,7 +89,7 @@ module top_jk (
 
 
     PS2Receiver u_ps2_receiver (
-    .clk(clk100),
+    .clk(clk6),
     .ps2_clk(ps2_clk),
     .ps2_data(ps2_data),
     .keycode(keycode),
@@ -131,7 +131,7 @@ module top_jk (
         .level_home(current_level),
         .level_remote(data_3[7:6]),
         .vga_in(vga_if_bg_uart.in),
-        .vga_out(vga_if_uart_ctl.out),
+        .vga_out(vga_if_uart_r.out),
         .pixel_addr(address_uart),
         .rgb_pixel(rgb_pixel_uart),
         .x_value({dummy_uart,data_2[2:0],data_1}),
@@ -146,7 +146,7 @@ module top_jk (
     );
 
     jump_king_ctl u_jump_king_ctl(
-        .clk(clk100),
+        .clk(clk6),
         .rst(rst),
         .key_space(key_space),
         .key_right(key_right),
@@ -155,12 +155,11 @@ module top_jk (
         .value_y(y_pos),
         .character_skin(character_skin),
         .level(current_level),
-        .vga_in(vga_if_uart_ctl.in),
-        .vga_out(vga_if_ctl_r.out)
+        .vga_in(vga_if_uart_r.in)
     );
 
     uart_ctl u_uart(
-        .clk(clk100),
+        .clk(clk6),
         .rst(rst),
         .data_in_1(x_pos[7:0]),
         .data_out_1(data_1),
@@ -179,7 +178,7 @@ module top_jk (
     draw_character u_draw_character (
         .clk,
         .rst,
-        .vga_in(vga_if_ctl_r.in),
+        .vga_in(vga_if_uart_r.in),
         .vga_out(vga_if_r_crown.out),
         .pixel_addr(address),
         .rgb_pixel(rgb_pixel),

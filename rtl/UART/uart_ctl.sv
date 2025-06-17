@@ -101,7 +101,7 @@ module uart_ctl (
      */
 
     uart #(
-        .DBIT(8), .SB_TICK(16), .DVSR(54), .DVSR_BIT(7), .FIFO_W(1)
+        .DBIT(8), .SB_TICK(16), .DVSR(21), .DVSR_BIT(7), .FIFO_W(1)
     ) uart_inst (
         .clk(clk),
         .reset(rst),
@@ -116,7 +116,7 @@ module uart_ctl (
     );
 
     uart #(
-        .DBIT(8), .SB_TICK(16), .DVSR(54), .DVSR_BIT(7), .FIFO_W(1)
+        .DBIT(8), .SB_TICK(16), .DVSR(21), .DVSR_BIT(7), .FIFO_W(1)
     ) uart_inst_2 (
         .clk(clk),
         .reset(rst),
@@ -131,7 +131,7 @@ module uart_ctl (
     );
 
     uart #(
-        .DBIT(8), .SB_TICK(16), .DVSR(54), .DVSR_BIT(7), .FIFO_W(1)
+        .DBIT(8), .SB_TICK(16), .DVSR(21), .DVSR_BIT(7), .FIFO_W(1)
     ) uart_inst_3 (
         .clk(clk),
         .reset(rst),

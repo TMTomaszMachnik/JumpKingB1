@@ -13,7 +13,7 @@
  */
 
 module JumpKing (
-        input  wire clk,                     // Synchronnous reset and clock
+        input  wire clk_in1,                     // Synchronnous reset and clock
         input  wire btnC,
 
         output wire Vsync,                   // VGA Signals
@@ -46,7 +46,7 @@ module JumpKing (
      * Local variables and signals
      */
 
-    wire clk_65, clk_100;
+    wire clk_65, clk_100, clk_6;
     wire locked;
     wire clk_65_mirror;
 
@@ -66,8 +66,9 @@ module JumpKing (
     clk_wiz_0 clk_wiz_mod(
         .clk_100(clk_100),
         .clk_65(clk_65),
+        .clk_6(clk_6),
         .locked(locked),
-        .clk_in1(clk)
+        .clk_in1(clk_in1)
     );
 
     // Mirror pclk on a pin for use by the testbench;
@@ -91,6 +92,7 @@ module JumpKing (
     top_jk u_top_jk (                 // Top module instantiation
         .clk(clk_65),
         .clk100(clk_100),
+        .clk6(clk_6),
         .rst(btnC),
         .r(vgaRed),
         .g(vgaGreen),

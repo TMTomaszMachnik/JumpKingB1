@@ -31,6 +31,7 @@ localparam REC_WIDTH = 47;
 localparam REC_HEIGHT = 63;
 
 logic [11:0] rgb_nxt;
+logic [11:0] pixel_addr_nxt;
 
 localparam C_DELAY_LEN = 3;
 
@@ -73,6 +74,7 @@ always_ff @(posedge clk) begin : rec_ff_blk
         vga_out.hsync  <= '0;
         vga_out.hblnk  <= '0;
         vga_out.rgb    <= '0;
+        pixel_addr <= '0;
     end else begin
         vga_out.vcount <= vcount_buf[C_DELAY_LEN-1];
         vga_out.vsync  <= vsync_buf[C_DELAY_LEN-1];
@@ -81,19 +83,20 @@ always_ff @(posedge clk) begin : rec_ff_blk
         vga_out.hsync  <= hsync_buf[C_DELAY_LEN-1];
         vga_out.hblnk  <= hblnk_buf[C_DELAY_LEN-1];
         vga_out.rgb    <= rgb_nxt;
+        pixel_addr <= pixel_addr_nxt;
     end
 end
 
 always_comb begin : bg_comb_blk
     rgb_nxt = rgb_buf[C_DELAY_LEN-1];
-    pixel_addr = '0;
+    pixel_addr_nxt = '0;
 
     if ((vcount_buf[C_DELAY_LEN-1] >= y_value) && 
         (vcount_buf[C_DELAY_LEN-1] < (y_value + REC_HEIGHT)) &&
         (hcount_buf[C_DELAY_LEN-1] >= x_value) && 
         (hcount_buf[C_DELAY_LEN-1] < (x_value + REC_WIDTH))) begin
         
-        pixel_addr = (vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1) + 
+        pixel_addr_nxt = (vcount_buf[C_DELAY_LEN-1] - y_value) * (REC_WIDTH+1) + 
                     (hcount_buf[C_DELAY_LEN-1] - x_value);
         
         if (rgb_pixel != 12'hF_A_C) begin

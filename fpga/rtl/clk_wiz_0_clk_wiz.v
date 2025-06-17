@@ -1,24 +1,22 @@
 
 // file: clk_wiz_0.v
-// 
-// (c) Copyright 2008 - 2013 Xilinx, Inc. All rights reserved.
-// 
+// (c) Copyright 2017-2018, 2023 Advanced Micro Devices, Inc. All rights reserved.
+//
 // This file contains confidential and proprietary information
-// of Xilinx, Inc. and is protected under U.S. and
-// international copyright and other intellectual property
-// laws.
-// 
+// of AMD and is protected under U.S. and international copyright
+// and other intellectual property laws.
+//
 // DISCLAIMER
 // This disclaimer is not a license and does not grant any
 // rights to the materials distributed herewith. Except as
 // otherwise provided in a valid license issued to you by
-// Xilinx, and to the maximum extent permitted by applicable
+// AMD, and to the maximum extent permitted by applicable
 // law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
-// WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
+// WITH ALL FAULTS, AND AMD HEREBY DISCLAIMS ALL WARRANTIES
 // AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
 // BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
 // INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
-// (2) Xilinx shall not be liable (whether in contract or tort,
+// (2) AMD shall not be liable (whether in contract or tort,
 // including negligence, or under any other theory of
 // liability) for any loss or damage of any kind or nature
 // related to, arising under or in connection with these
@@ -27,11 +25,11 @@
 // (including loss of data, profits, goodwill, or any type of
 // loss or damage suffered as a result of any action brought
 // by a third party) even if such damage or loss was
-// reasonably foreseeable or Xilinx had been advised of the
+// reasonably foreseeable or AMD had been advised of the
 // possibility of the same.
-// 
+//
 // CRITICAL APPLICATIONS
-// Xilinx products are not designed or intended to be fail-
+// AMD products are not designed or intended to be fail-
 // safe, or for use in any application requiring fail-safe
 // performance, such as life-support or safety devices or
 // systems, Class III medical devices, nuclear facilities,
@@ -40,13 +38,12 @@
 // injury, or severe property or environmental damage
 // (individually and collectively, "Critical
 // Applications"). Customer assumes the sole risk and
-// liability of any use of Xilinx products in Critical
+// liability of any use of AMD products in Critical
 // Applications, subject only to applicable laws and
 // regulations governing limitations on product liability.
-// 
+//
 // THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
 // PART OF THIS FILE AT ALL TIMES.
-// 
 //----------------------------------------------------------------------------
 // User entered comments
 //----------------------------------------------------------------------------
@@ -56,13 +53,14 @@
 //  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 //   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 //----------------------------------------------------------------------------
-// _clk_100__100.00000______0.000______50.0______130.067_____99.281
-// __clk_65__65.00000______0.000______50.0______142.278_____99.281
+// _clk_100__100.00000______0.000______50.0______145.553____124.502
+// __clk_65__65.00000______0.000______50.0______159.200____124.502
+// ___clk_6___6.50000______0.000______50.0______252.021____124.502
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
 //----------------------------------------------------------------------------
-// __primary_____________100____________0.010
+// __primary_________100.000____________0.010
 
 `timescale 1ps/1ps
 
@@ -72,6 +70,7 @@ module clk_wiz_0_clk_wiz
   // Clock out ports
   output        clk_100,
   output        clk_65,
+  output        clk_6,
   // Status and control signals
   output        locked,
   input         clk_in1
@@ -96,7 +95,7 @@ wire clk_in2_clk_wiz_0;
 
   wire        clk_100_clk_wiz_0;
   wire        clk_65_clk_wiz_0;
-  wire        clk_out3_clk_wiz_0;
+  wire        clk_6_clk_wiz_0;
   wire        clk_out4_clk_wiz_0;
   wire        clk_out5_clk_wiz_0;
   wire        clk_out6_clk_wiz_0;
@@ -111,7 +110,6 @@ wire clk_in2_clk_wiz_0;
   wire        clkfboutb_unused;
     wire clkout0b_unused;
    wire clkout1b_unused;
-   wire clkout2_unused;
    wire clkout2b_unused;
    wire clkout3_unused;
    wire clkout3b_unused;
@@ -126,6 +124,9 @@ wire clk_in2_clk_wiz_0;
   (* KEEP = "TRUE" *) 
   (* ASYNC_REG = "TRUE" *)
   reg  [7 :0] seq_reg2 = 0;
+  (* KEEP = "TRUE" *) 
+  (* ASYNC_REG = "TRUE" *)
+  reg  [7 :0] seq_reg3 = 0;
 
   MMCME2_ADV
   #(.BANDWIDTH            ("OPTIMIZED"),
@@ -133,17 +134,21 @@ wire clk_in2_clk_wiz_0;
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT_F      (9.750),
+    .CLKFBOUT_MULT_F      (6.500),
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (9.750),
+    .CLKOUT0_DIVIDE_F     (6.500),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKOUT1_DIVIDE       (15),
+    .CLKOUT1_DIVIDE       (10),
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
+    .CLKOUT2_DIVIDE       (100),
+    .CLKOUT2_PHASE        (0.000),
+    .CLKOUT2_DUTY_CYCLE   (0.500),
+    .CLKOUT2_USE_FINE_PS  ("FALSE"),
     .CLKIN1_PERIOD        (10.000))
   mmcm_adv_inst
     // Output clocks
@@ -154,7 +159,7 @@ wire clk_in2_clk_wiz_0;
     .CLKOUT0B            (clkout0b_unused),
     .CLKOUT1             (clk_65_clk_wiz_0),
     .CLKOUT1B            (clkout1b_unused),
-    .CLKOUT2             (clkout2_unused),
+    .CLKOUT2             (clk_6_clk_wiz_0),
     .CLKOUT2B            (clkout2b_unused),
     .CLKOUT3             (clkout3_unused),
     .CLKOUT3B            (clkout3b_unused),
@@ -226,6 +231,19 @@ wire clk_in2_clk_wiz_0;
  
   always @(posedge clk_65_clk_wiz_0_en_clk)
         seq_reg2 <= {seq_reg2[6:0],locked_int};
+
+
+  BUFGCE clkout3_buf
+   (.O   (clk_6),
+    .CE  (seq_reg3[7]),
+    .I   (clk_6_clk_wiz_0));
+ 
+  BUFH clkout3_buf_en
+   (.O   (clk_6_clk_wiz_0_en_clk),
+    .I   (clk_6_clk_wiz_0));
+ 
+  always @(posedge clk_6_clk_wiz_0_en_clk)
+        seq_reg3 <= {seq_reg3[6:0],locked_int};
 
 
 
