@@ -46,7 +46,7 @@ module JumpKing (
      * Local variables and signals
      */
 
-    wire clk_65, clk_100, clk_6;
+    wire clk_65, clk_6;
     wire locked;
     wire clk_65_mirror;
 
@@ -64,7 +64,6 @@ module JumpKing (
      * FPGA submodules placement
      */
     clk_wiz_0 clk_wiz_mod(
-        .clk_100(clk_100),
         .clk_65(clk_65),
         .clk_6(clk_6),
         .locked(locked),
@@ -91,7 +90,6 @@ module JumpKing (
 
     top_jk u_top_jk (                 // Top module instantiation
         .clk(clk_65),
-        .clk100(clk_100),
         .clk6(clk_6),
         .rst(btnC),
         .r(vgaRed),

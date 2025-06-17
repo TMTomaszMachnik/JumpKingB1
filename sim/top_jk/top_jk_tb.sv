@@ -30,14 +30,14 @@ module top_jk_tb;
      */
 
     localparam CLK_PERIOD = 15.38;     // 65 MHz
-    localparam CLK_PERIOD100 = 10;     // 100 MHz
+    localparam CLK_PERIOD6 = 153.84;     // 6.5 MHz
 
 
     /**
      * Local variables and signals
      */
 
-    logic clk, clk100, rst;
+    logic clk, clk6, rst;
     wire vs, hs;
     wire [3:0] r, g, b;
 
@@ -52,8 +52,8 @@ module top_jk_tb;
     end
 
     initial begin
-        clk100 = 1'b0;
-        forever #(CLK_PERIOD100/2) clk100 = ~clk100;
+        clk6 = 1'b0;
+        forever #(CLK_PERIOD6/2) clk6 = ~clk6;
     end
 
 
@@ -63,7 +63,7 @@ module top_jk_tb;
 
     top_jk dut (
         .clk(clk),
-        .clk100(clk100),
+        .clk6(clk6),
         .rst(rst),
         .vs(vs),
         .hs(hs),

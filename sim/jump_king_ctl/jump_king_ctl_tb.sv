@@ -36,8 +36,7 @@ module jump_king_ctl_tb;
         .value_y(value_y),
         .character_skin(character_state),
         .level(level),
-        .vga_in(vga_in),
-        .vga_out(vga_out)
+        .vga_in(vga_in)
     );
 
 

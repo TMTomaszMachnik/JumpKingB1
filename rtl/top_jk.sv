@@ -10,7 +10,6 @@
 
 module top_jk (
         input  logic clk,
-        input  logic clk100,
         input  logic clk6,
         input  logic rst,
 
